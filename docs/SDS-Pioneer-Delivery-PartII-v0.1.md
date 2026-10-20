@@ -16,7 +16,7 @@
 
 | Version | Date | Changes |
 | - | - | - |
-| 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. Later the same day: Tasks A–C pseudocode rewritten in plain steps with clearer names, and a worked example added for each task using an assignment test case. |
+| 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. Later the same day: Tasks A–C pseudocode rewritten in plain steps with clearer names, and a worked example added for each task using an assignment test case. Plain-language step sequence added to Task A (4.1). |
 
 
 ## Table of Contents
@@ -127,7 +127,27 @@ A non-integer value cannot reach these methods, because their parameters are alr
 
 ### 4.1 Approach
 
-Sort the points by x and split them into a left half and a right half. Find the closest pair in each half. Then check whether a pair that crosses the dividing line is even closer.
+In short: **sort once, split down, solve the tiny groups, then choose, strip, and return at each level going up.**
+
+1. **Once:** sort the points by x and by y.
+
+2. **Going down:** split the x-sorted points in half at a dividing line, and split the y-sorted list the same way while keeping its order. Repeat until each group has 3 or fewer points.
+
+3. **Bottom:** compare every pair in each tiny group.
+
+4. **Going up, at each split:**
+
+   1. **Choose:** take the closer of the two halves' answers. Its distance is `d`, the best so far.
+
+   2. **x strip:** keep only points within `d` of this split's dividing line. Only these can form a closer pair that crosses the line.
+
+   3. **y strip:** in bottom-to-top order, each strip point checks the points above it, stopping at the first one that is `d` or more higher. If a closer pair turns up, `d` shrinks.
+
+   4. **Return:** pass the best pair up to the next level.
+
+5. **Top:** the final combine gives the answer.
+
+Sorting happens only once; every split keeps the order of the sorted lists. Points outside a strip are not removed from the problem: pairs among them were already checked inside their own halves at lower levels.
 
 All distance comparisons use squared distances, so no square roots are needed.
 
