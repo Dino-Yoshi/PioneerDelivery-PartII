@@ -10,13 +10,13 @@
 
 - **Design authority:** [SDS-Pioneer-Delivery-PartII-v0.1.md](SDS-Pioneer-Delivery-PartII-v0.1.md)
 
-- **Figures:** [Task A walkthrough slide deck](https://claude.ai/artifact/KgiTAndkpo6KZSZ8bf93ap) (private to the owner until shared)
+- **Figures:** [TaskA-Closest-Pair-Walkthrough.pdf](TaskA-Closest-Pair-Walkthrough.pdf) (slides exported to PDF); editable original: [slide deck](https://claude.ai/artifact/KgiTAndkpo6KZSZ8bf93ap) (private to the owner until shared)
 
 ## Revision History
 
 | Version | Date | Changes |
 | - | - | - |
-| 0.1 | October 20, 2026 | First version: illustrated walkthrough of test A2, splitting levels, and why the shortcuts are safe and fast. Later the same day: the embedded SVG figures were replaced by references to the walkthrough slide deck. |
+| 0.1 | October 20, 2026 | First version: illustrated walkthrough of test A2, splitting levels, and why the shortcuts are safe and fast. Later the same day: the embedded SVG figures were replaced by references to the walkthrough slides, saved as `TaskA-Closest-Pair-Walkthrough.pdf`. |
 
 ## Table of Contents
 
@@ -52,7 +52,7 @@ Expected answer: **C, D with d² = 1.**
 
 ### 3.1 The points
 
-*Figure: [slide 2](https://claude.ai/artifact/KgiTAndkpo6KZSZ8bf93ap) of the walkthrough deck.*
+*Figure: slide 2 of the [walkthrough slides](TaskA-Closest-Pair-Walkthrough.pdf).*
 
 ### 3.2 Sort once and split
 
@@ -60,7 +60,7 @@ Sort the points by x: `A, F, C, D, B, E`. Put the first half on the left and the
 
 The points are also sorted by y once, now: `A, B, E, C, D, F`. That order is used in step 3.6.
 
-*Figure: [slide 4](https://claude.ai/artifact/KgiTAndkpo6KZSZ8bf93ap) of the walkthrough deck.*
+*Figure: slide 4 of the [walkthrough slides](TaskA-Closest-Pair-Walkthrough.pdf).*
 
 ### 3.3 Solve each half
 
@@ -70,7 +70,7 @@ Each half has 3 points, which is small enough to measure every pair.
 
 - Right: D–B ≈ **3.6**, D–E ≈ 7.6, B–E = 5.
 
-*Figure: [slide 5](https://claude.ai/artifact/KgiTAndkpo6KZSZ8bf93ap) of the walkthrough deck.*
+*Figure: slide 5 of the [walkthrough slides](TaskA-Closest-Pair-Walkthrough.pdf).*
 
 ### 3.4 Choose d
 
@@ -84,7 +84,7 @@ A crossing pair closer than d must have both points within d of the line. A poin
 
 So keep only points within d (3.6) of the line: x from about 0.4 to 7.6. A and E are too far and drop out. F, C, D, and B stay.
 
-*Figure: [slide 6](https://claude.ai/artifact/KgiTAndkpo6KZSZ8bf93ap) of the walkthrough deck.*
+*Figure: slide 6 of the [walkthrough slides](TaskA-Closest-Pair-Walkthrough.pdf).*
 
 ### 3.6 The y strip
 
@@ -94,17 +94,17 @@ For each point, look only at the points above it, and stop at the first one that
 
 **B's turn.** B's y strip runs from B's height up to d above it. C and D are inside it, so they are checked: B–C ≈ 4.2, B–D ≈ 3.6, neither closer. F is 7 above B, so B stops.
 
-*Figure: [slide 7](https://claude.ai/artifact/KgiTAndkpo6KZSZ8bf93ap) of the walkthrough deck.*
+*Figure: slide 7 of the [walkthrough slides](TaskA-Closest-Pair-Walkthrough.pdf).*
 
 **C's turn.** D is inside C's y strip: C–D = **1**, a new best. Now d = 1, so the y strip shrinks to 1 above C. F is 4 above C, so C stops.
 
-*Figure: [slide 8](https://claude.ai/artifact/KgiTAndkpo6KZSZ8bf93ap) of the walkthrough deck.*
+*Figure: slide 8 of the [walkthrough slides](TaskA-Closest-Pair-Walkthrough.pdf).*
 
 **D's turn.** F is 4 above D, more than d = 1, so D stops. **F** has nothing above it.
 
 ### 3.7 The answer
 
-*Figure: [slide 9](https://claude.ai/artifact/KgiTAndkpo6KZSZ8bf93ap) of the walkthrough deck.*
+*Figure: slide 9 of the [walkthrough slides](TaskA-Closest-Pair-Walkthrough.pdf).*
 
 **C, D with d² = 1**, which matches the expected result.
 
@@ -114,7 +114,7 @@ A2 has only 6 points, so it splits once. Larger inputs keep splitting until ever
 
 The figure below has 12 points. Split 1 makes two groups of 6. Each of those is split again (split 2), making four groups of 3, shown in four colors. Groups of 3 are measured directly.
 
-*Figure: [slide 10](https://claude.ai/artifact/KgiTAndkpo6KZSZ8bf93ap) of the walkthrough deck.*
+*Figure: slide 10 of the [walkthrough slides](TaskA-Closest-Pair-Walkthrough.pdf).*
 
 The answers then come back up:
 
