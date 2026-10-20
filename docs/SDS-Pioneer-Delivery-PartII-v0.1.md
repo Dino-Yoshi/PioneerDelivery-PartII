@@ -16,7 +16,7 @@
 
 | Version | Date | Changes |
 | - | - | - |
-| 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. Later the same day: Tasks A–C pseudocode rewritten in plain steps with clearer names, and a worked example added for each task using an assignment test case. Plain-language step sequence added to Task A (4.1), with a link to a separate illustrated Task A walkthrough. October 20: plain-language step sequence and two-pointer merge summary added to Task B (5.1). |
+| 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. Later the same day: Tasks A–C pseudocode rewritten in plain steps with clearer names, and a worked example added for each task using an assignment test case. Plain-language step sequence added to Task A (4.1), with a link to a separate illustrated Task A walkthrough. October 20: plain-language step sequence and two-pointer merge summary added to Task B (5.1), and a step sequence with rank bands added to Task C (6.1). |
 
 
 ## Table of Contents
@@ -340,7 +340,29 @@ Building the map and rank array is `O(n)`. Merge sort is `O(n log n)`: `O(log n)
 
 ### 6.1 Approach
 
-Pick a pivot that is guaranteed to be near the middle. Split the values into those smaller than, equal to, and larger than the pivot. The kth smallest must be in one of those three groups, so keep only that group and repeat.
+In short: **binary search on ranks. Each round picks a pivot guaranteed to be near the middle, splits the values around it, and keeps only the group that holds rank k.** The whole array is never sorted; only groups of 5 or fewer are.
+
+1. Split the current values into groups of 5. Sort each tiny group and take its middle value (the lower middle for an even-sized group).
+
+2. The middle of those medians is the **pivot**. With many groups, finding it runs this same procedure on the list of medians.
+
+3. Compare every value with the pivot, in one pass, and put it in **smaller**, **same**, or **larger**. No sorting: each group keeps the original order.
+
+4. Use the group sizes to find which rank band k lands in (s = size of smaller, e = size of same):
+
+   - k ≤ s → keep **smaller**; k stays the same.
+
+   - s < k ≤ s + e → **stop: the answer is the pivot.** The kth smallest is one of the pivot's copies.
+
+   - k > s + e → keep **larger**; new k = k − s − e, because everything below it was thrown away.
+
+5. Repeat with the kept group until it has 5 or fewer values.
+
+6. Sort that small group. The value at position k (the current k) is the answer.
+
+The rank bands come from the group sizes alone. In sorted order, smaller would hold ranks 1 to s, same ranks s + 1 to s + e, and larger the rest, but no group is sorted to find this.
+
+For an illustrated, step-by-step walkthrough, see the slides in [figures/task-c/Task C Selecting the kth Smallest.pptx](figures/task-c/Task%20C%20Selecting%20the%20kth%20Smallest.pptx).
 
 ```
 selectKthSmallest(times, k):
