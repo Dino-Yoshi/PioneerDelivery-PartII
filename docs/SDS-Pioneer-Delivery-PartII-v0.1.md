@@ -1,30 +1,46 @@
 # Pioneer Delivery — Software Design Specification, Part II
 
 - **Project:** Pioneer Delivery Company's Algorithm Portfolio — Part II: Divide and Conquer
+
 - **Course:** CS 413 — Analysis of Algorithms
+
 - **Version:** 0.1
+
 - **Date:** October 19, 2026
+
 - **Status:** Draft for review; not yet accepted for implementation
+
 - **Requirements authority:** [SRS-Pioneer-Delivery-PartII-v0.3.md](SRS-Pioneer-Delivery-PartII-v0.3.md)
 
 ## Revision History
 
 | Version | Date | Changes |
 | - | - | - |
-| 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. |
+| 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. Later the same day: Tasks A–C pseudocode rewritten in plain steps with clearer names, and a worked example added for each task using an assignment test case. |
+
 
 ## Table of Contents
 
 - [1. Design Goals and Baseline](#1-design-goals-and-baseline)
+
 - [2. Module Structure](#2-module-structure)
+
 - [3. Task Interfaces](#3-task-interfaces)
+
 - [4. Task A Design](#4-task-a-design)
+
 - [5. Task B Design](#5-task-b-design)
+
 - [6. Task C Design](#6-task-c-design)
+
 - [7. Test Suite Design](#7-test-suite-design)
+
 - [8. CLI Design](#8-cli-design)
+
 - [9. Benchmark Design](#9-benchmark-design)
+
 - [10. Submission Packaging](#10-submission-packaging)
+
 - [11. Requirements Traceability](#11-requirements-traceability)
 
 ## 1. Design Goals and Baseline
@@ -47,9 +63,10 @@ The design aims for the simplest structure a human developer can read without ex
 | Timing | Separate `Benchmark` main class |
 | Task D report | `reports/TaskD.odt`, exported to `reports/TaskD.pdf` |
 
+
 ## 2. Module Structure
 
-```text
+```
 edu.pioneer
 ├── App                         looping menu (entry point)
 ├── Benchmark                   Task D timing (separate entry point)
@@ -81,7 +98,7 @@ The reference checks live in `src/main` because the CLI runs them, but only the 
 
 These three methods are the documented input interface (SRS 3.2). Each copies its input and never modifies the caller's data.
 
-```text
+```
 ClosestPair ClosestPairFinder.findClosestPair(List<Location> locations)
 long        InversionCounter.countInversions(List<String> planned, List<String> actual)
 int         KthSmallestSelector.selectKthSmallest(int[] times, int k)
@@ -103,94 +120,167 @@ Each method checks its input before running the algorithm and throws `IllegalArg
 | C | Negative time | `negative` |
 | C | `k` outside `1..n` | `out of range` |
 
+
 A non-integer value cannot reach these methods, because their parameters are already integers. `FixtureReader` checks this when reading a file and throws `IllegalArgumentException` with `not an integer`. Messages also name the offending value, for example `duplicate coordinates (3, 4) for IDs B and E`.
 
 ## 4. Task A Design
 
 ### 4.1 Approach
 
-Sort the points once by x, and once by y. Split the x-sorted list in half by position, and split the y-sorted list into the same two halves by checking which half each point belongs to. Solve each half, then check a narrow strip around the dividing line for a closer pair that crosses it.
+Sort the points by x and split them into a left half and a right half. Find the closest pair in each half. Then check whether a pair that crosses the dividing line is even closer.
 
-```text
+All distance comparisons use squared distances, so no square roots are needed.
+
+```
 findClosestPair(locations):
-    validate(locations)
-    byX = copy sorted by (x, then y)
-    byY = copy sorted by (y, then x)
-    return closest(byX, byY)
+    check the input (section 3)
+    pointsByX = locations sorted by x (ties broken by y)
+    pointsByY = locations sorted by y (ties broken by x)
+    return closestPair(pointsByX, pointsByY)
 
-closest(byX, byY):
-    if size <= 3:
-        return bruteForce(byX)
+closestPair(pointsByX, pointsByY):
+    // Base case: few points, so compare every pair
+    if there are 3 or fewer points:
+        return the closest pair found by comparing every pair
 
-    mid = size / 2
-    leftX = byX[0 .. mid-1]
-    rightX = byX[mid .. size-1]
-    leftSet = identity set of leftX
-    midX = byX[mid - 1].x
+    // 1. Divide: the first half of pointsByX goes left, the rest goes right
+    leftByX   = first half of pointsByX
+    rightByX  = second half of pointsByX
+    dividingX = x of the last point in leftByX
 
-    // Split byY by membership, keeping y order
-    leftY, rightY = empty lists
-    for p in byY:
-        if p in leftSet: leftY.add(p) else: rightY.add(p)
+    // Keep each side in y order without sorting again:
+    // walk pointsByY once and send each point to the side it was put on above
+    leftByY, rightByY = pointsByY split by side, keeping its order
 
-    best = smaller of closest(leftX, leftY) and closest(rightX, rightY)
+    // 2. Conquer: solve each side on its own
+    best = the closer of closestPair(leftByX, leftByY)
+                     and closestPair(rightByX, rightByY)
 
-    // Strip: points whose horizontal distance to the line is smaller than best
-    strip = [p in byY where (p.x - midX)² < best.squaredDistance]
-    for i in 0 .. strip.size-1:
-        for j in i+1 .. strip.size-1 while (strip[j].y - strip[i].y)² < best.squaredDistance:
-            best = smaller of best and pair(strip[i], strip[j])
+    // 3. Combine: look for a closer pair that crosses the line
+    return checkStrip(pointsByY, dividingX, best)
+
+checkStrip(pointsByY, dividingX, best):
+    // Only points near the line can be part of a closer crossing pair
+    strip = points in pointsByY whose horizontal distance to dividingX
+            is less than best's distance (still in y order)
+
+    for each point p in strip:
+        for each later point q in strip:
+            stop once q is at least best's distance above p
+            if p and q are closer than best: best = (p, q)
 
     return best
 ```
 
-### 4.2 Design notes
+### 4.2 Worked Example (Test A3)
 
-- **Tied x-coordinates.** The split is by position in `byX`, and `leftSet` records which points went left. Points with the same x as the dividing line can land on either side, but each is placed by identity, not by comparing its x to `midX` (SRS 4.2).
-- **No re-sorting.** `leftY` and `rightY` come from one pass over `byY`, so they are already sorted by y.
-- **Strip bound.** Because both halves have no pair closer than `best`, at most a constant number of strip points (7 in the standard argument) can follow any point within `best` in y order. The inner loop therefore stops after a constant number of steps.
+Points: `A(−3, 1)`, `B(−3, 11)`, `C(1, 1)`, `D(2, 15)`.
+
+1. **Sort.** By x: `A, B, C, D`. By y: `A, C, B, D`.
+
+2. **Divide.** Left is `A, B`; right is `C, D`. The dividing line is at `x = −3` (B's x).
+
+3. **Conquer.** Left: `A–B` has `d² = 0² + 10² = 100`. Right: `C–D` has `d² = 1² + 14² = 197`. The best so far is `A–B`, 100.
+
+4. **Combine.** Every point is within distance 10 of the line, so all four are in the strip, in y order `A, C, B, D`.
+
+   - `A` vs `C`: `d² = 4² + 0² = 16`, closer than 100. The best is now `A–C`, 16.
+
+   - `A` vs `B`: B is 10 above A, and `10² = 100` is not less than 16, so stop.
+
+   - `C` vs `B` and `B` vs `D` stop the same way.
+
+Result: `A, C; d² = 16`. The answer crosses the dividing line, which is why A3 matters.
+
+### 4.3 Design Notes
+
+- **Tied x-coordinates.** Points are split by their position in `pointsByX`, and the implementation records which points went left. Points with the same x as the dividing line can land on either side, but each one is placed by that record (its identity), not by comparing its x to `dividingX` (SRS 4.2).
+
+- **No re-sorting.** `leftByY` and `rightByY` come from one pass over `pointsByY`, so they are already sorted by y.
+
+- **Strip bound.** Neither half has a pair closer than `best`, so only a few points can be packed close together near the line. For any strip point, at most 7 later strip points can be within `best`'s distance above it. The inner loop therefore stops after a constant number of steps, instead of comparing every pair in the strip.
+
 - **All distances are squared** `long` values, so no square roots or floating point are used. The coordinate limit keeps `d²` within `long` range (SRS 4.1).
+
 - **Ties.** On equal distances, the first pair found is kept. Any minimizing pair is acceptable.
 
-### 4.3 Complexity
+### 4.4 Complexity
 
-The two initial sorts take `O(n log n)`. Each recursion level does `O(n)` work (splitting `byY` and scanning the strip), and there are `O(log n)` levels, so the total is `O(n log n)`. Extra memory is `O(n)`: the lists alive at any one time along a recursion path add up to `n + n/2 + n/4 + … < 2n`.
+The two initial sorts take `O(n log n)`. Each recursion level does `O(n)` work (splitting `pointsByY` and scanning the strip), and there are `O(log n)` levels, so the total is `O(n log n)`. Extra memory is `O(n)`: the lists alive at any one time along a recursion path add up to `n + n/2 + n/4 + … < 2n`.
 
 ## 5. Task B Design
 
 ### 5.1 Approach
 
-Give each ID its position in `planned` (1, 2, 3, …). Replace each ID in `actual` with that position. Count inversions in the resulting array with merge sort.
+Replace each ID with its position in the planned order, so the problem becomes counting out-of-order pairs in a list of numbers. Merge sort that list; while merging, count how many pairs it had to put back in order.
 
-```text
+```
 countInversions(planned, actual):
-    validate(planned, actual)
-    rankOf = map from planned[i] to i + 1
-    ranks = [rankOf[id] for id in actual]
-    return sortAndCount(ranks, 0, n - 1, buffer)
+    check the input (section 3)
 
-sortAndCount(a, lo, hi, buffer):
-    if lo >= hi: return 0
-    mid = (lo + hi) / 2
-    count = sortAndCount(a, lo, mid) + sortAndCount(a, mid + 1, hi)
+    // Step 1: turn IDs into numbers (rank = position in planned, starting at 1)
+    rankOf = { planned[0] → 1, planned[1] → 2, ... }
+    ranks  = [ rankOf[id] for each id in actual ]
 
-    // Merge; when a right value is taken first, it is smaller than every value left in the left half
-    i = lo, j = mid + 1
-    while both halves have values:
-        if a[i] <= a[j]: take a[i]
-        else: take a[j]; count += (mid - i + 1)
-    copy remaining values, then copy buffer back into a[lo .. hi]
+    // Step 2: count out-of-order pairs while merge sorting the ranks
+    return sortAndCount(ranks)
+
+sortAndCount(ranks):
+    // Sorts ranks and returns how many inversions it contained
+    if ranks has 0 or 1 values: return 0
+
+    left  = first half of ranks
+    right = second half of ranks
+    count = sortAndCount(left) + sortAndCount(right)
+    count = count + mergeAndCount(left, right, into ranks)
+    return count
+
+mergeAndCount(left, right, output):
+    // Both halves are sorted. Repeatedly take the smaller front value.
+    count = 0
+    while left and right both have values:
+        if front of left <= front of right:
+            move front of left to output
+        else:
+            move front of right to output
+            // That value is smaller than every value still in left,
+            // and all of those came before it: one inversion each
+            count = count + (number of values still in left)
+    move any leftover values to output
     return count
 ```
 
-### 5.2 Design notes
+The implementation works on index ranges of one array with one shared buffer instead of copying halves, but the steps are the same.
 
-- **Cross-half count.** When `a[j]` from the right half is taken before `a[i]`, every value still waiting in the left half is larger than `a[j]` but came earlier, so each forms one inversion. That is `mid - i + 1` inversions at once.
+### 5.2 Worked Example (Test B1)
+
+Planned `[A, B, C, D, E]`, actual `[A, C, D, B, E]`.
+
+1. **Ranks.** A→1, B→2, C→3, D→4, E→5, so actual becomes `[1, 3, 4, 2, 5]`.
+
+2. **Divide.** Left `[1, 3, 4]`, right `[2, 5]`. Both are already in order, so each half contributes 0.
+
+3. **Merge** `[1, 3, 4]` with `[2, 5]`:
+
+   - Take 1 from left.
+
+   - Right's 2 is smaller than left's 3, so take 2. Left still holds `3, 4`, and both came before 2 but are bigger: **+2**.
+
+   - Take 3, 4, then 5. No more inversions.
+
+Result: **2**, the pairs `(C, B)` and `(D, B)`, which are `(B, C)` and `(B, D)` in planned order.
+
+### 5.3 Design Notes
+
+- **Cross-half count.** When a value from `right` is taken before the values still waiting in `left`, each of those left values is larger but came earlier, so each forms one inversion. They are counted all at once instead of one pair at a time.
+
 - **Count type.** `count` is a `long`. The 100,000-element reversed case gives 4,999,950,000, which is larger than an `int` can hold.
-- **Validation** builds `rankOf` from `planned`; a repeat there is a duplicate. While building `ranks`, an ID missing from `rankOf` is `not in planned`, and an ID seen twice in `actual` is a duplicate.
-- One `buffer` array of size `n` is allocated once and reused by every merge.
 
-### 5.3 Complexity
+- **Validation** builds `rankOf` from `planned`; a repeat there is a duplicate. While building `ranks`, an ID missing from `rankOf` is `not in planned`, and an ID seen twice in `actual` is a duplicate.
+
+- **Memory.** One buffer array of size `n` is allocated once and reused by every merge.
+
+### 5.4 Complexity
 
 Building the map and rank array is `O(n)`. Merge sort is `O(n log n)`: `O(log n)` levels with `O(n)` merging per level. Extra memory is `O(n)` for the map, ranks, and buffer, plus `O(log n)` recursion depth.
 
@@ -198,36 +288,70 @@ Building the map and rank array is `O(n)`. Merge sort is `O(n log n)`: `O(log n)
 
 ### 6.1 Approach
 
-Pick a pivot that is guaranteed to be near the middle, split the values into less-than, equal-to, and greater-than groups, and continue only in the group that contains rank `k`.
+Pick a pivot that is guaranteed to be near the middle. Split the values into those smaller than, equal to, and larger than the pivot. The kth smallest must be in one of those three groups, so keep only that group and repeat.
 
-```text
+```
 selectKthSmallest(times, k):
-    validate(times, k)
+    check the input (section 3)
     return select(copy of times, k)
 
 select(values, k):
-    if values.length <= 5:
-        sort values; return values[k - 1]
+    // Returns the kth smallest value, with k counted from 1
 
-    // Pivot: median of the medians of groups of five
-    medians = for each group of up to 5 values: sort the group, take its middle value
-    pivot = select(medians, (medians.length + 1) / 2)
+    // Base case: 5 or fewer values, so just sort them
+    if values has 5 or fewer: sort values and return the kth one
 
-    less, equal, greater = three-way partition of values around pivot
+    // Step 1: choose a pivot that is guaranteed to be near the middle
+    pivot = medianOfMedians(values)
 
-    if k <= less.length: return select(less, k)
-    if k <= less.length + equal.length: return pivot
-    return select(greater, k - less.length - equal.length)
+    // Step 2: split the values into three groups around the pivot
+    smaller = values less than pivot
+    same    = values equal to pivot
+    larger  = values greater than pivot
+
+    // Step 3: keep only the group that holds the kth smallest
+    if k <= size of smaller:
+        return select(smaller, k)
+    if k <= size of smaller + size of same:
+        return pivot
+    return select(larger, k − size of smaller − size of same)
+
+medianOfMedians(values):
+    medians = empty list
+    for each group of 5 values in a row (the last group may be shorter):
+        sort the group and add its middle value to medians
+    return select(medians, middle position of medians)
 ```
 
-### 6.2 Design notes
+For a group or list of even size, "middle" means the lower of the two middle values.
 
-- **Adjusting k.** Discarding the `less` group removes the `less.length` smallest values, and discarding `equal` removes the next `equal.length`. So when continuing in `greater`, `k` drops by both counts. When continuing in `less`, nothing smaller was removed, so `k` stays the same.
-- **Duplicates.** All copies of the pivot go into `equal`, so repeated values never cause an endless loop. If every value is the same, the answer is found in one step.
-- **Why the pivot is good.** At least half of the group medians are at most the pivot, and each of those medians has two more values at most it in its group. So roughly 3/10 of all values are at most the pivot, and likewise at least it. Each recursive step therefore keeps at most about 7/10 of the values. That guarantee is what makes the worst case linear; a random pivot only makes it linear on average.
+### 6.2 Worked Example (Test C1)
+
+`T = [18, 4, 29, 11, 4, 16, 35, 9, 22]`, `k = 5`.
+
+1. **Groups of five.** `[18, 4, 29, 11, 4]` sorted is `[4, 4, 11, 18, 29]`, middle 11. `[16, 35, 9, 22]` sorted is `[9, 16, 22, 35]`, middle 16.
+
+2. **Pivot.** The middle of the medians `[11, 16]` is 11.
+
+3. **Split.** Smaller `[4, 4, 9]` (3 values), same `[11]` (1 value), larger `[18, 29, 16, 35, 22]` (5 values).
+
+4. **Choose a group.** `k = 5` is more than 3 (smaller) and more than 3 + 1 = 4 (smaller and same), so the answer is in larger. The 4 values thrown away are all below it, so look for rank `5 − 3 − 1 = 1` in larger.
+
+5. **Base case.** Larger has 5 values. Sorted, it is `[16, 18, 22, 29, 35]`; the 1st is **16**.
+
+Result: **16**.
+
+### 6.3 Design Notes
+
+- **Adjusting k.** Throwing away `smaller` removes that many of the smallest values, and throwing away `same` removes the next ones. So when continuing in `larger`, `k` drops by both sizes. When continuing in `smaller`, nothing below it was removed, so `k` stays the same.
+
+- **Duplicates.** All copies of the pivot go into `same`, so repeated values never cause an endless loop. If every value is the same, the answer is found in one step.
+
+- **Why the pivot is good.** Half of the group medians are no bigger than the pivot. Each of those medians is itself no smaller than 2 other values in its group of five. Together, that is about 3/10 of all values that are no bigger than the pivot, and by the same reasoning about 3/10 that are no smaller. So each step keeps at most about 7/10 of the values. That guarantee is what makes the worst case linear; a random pivot only makes it linear on average.
+
 - Sorting is used only on groups of at most five and on base cases of at most five values (SRS 6.2).
 
-### 6.3 Complexity
+### 6.4 Complexity
 
 `T(n) <= T(n/5) + T(7n/10) + O(n)`. Since `1/5 + 7/10 < 1`, the work shrinks geometrically, giving `O(n)` time. Extra memory is `O(n)`: the three partition arrays and the medians array are new arrays, and their sizes shrink geometrically down the recursion.
 
@@ -238,6 +362,7 @@ select(values, k):
 `CaseCatalog` lists every case for each task, in display order. `SuiteRunner.run(Task)` runs that task's cases and its random reference check, and returns a `List<CheckResult>`. Two callers use it:
 
 - `App` (the menu) prints the results with `ResultPrinter`.
+
 - `SuiteTest` (JUnit) uses `@TestFactory` to turn each `CheckResult` into one dynamic test named like `A3 Closest pair lies in different halves of the split`. The test fails with the expected and actual text when `passed` is false, so `./mvnw test` fails if any case fails.
 
 Fixture paths are relative to the project root. `run.sh`, `run.cmd`, and Maven all run from there.
@@ -248,7 +373,7 @@ Each case has `tests/inputs/<ID>.csv` and `tests/expected/<ID>.csv`.
 
 Input files:
 
-```text
+```
 Task A (header, then one location per row)     Task B (labeled rows)       Task C (labeled rows)
 id,x,y                                         planned,A,B,C,D,E           k,5
 A,-3,1                                         actual,A,C,D,B,E            times,18,4,29,11,4,16,35,9,22
@@ -257,7 +382,7 @@ B,-3,11
 
 Expected files use one label per line:
 
-```text
+```
 Task A                  Task A, tied case             Task B           Task C        Invalid input (any task)
 squared_distance,16     squared_distance,1            inversions,2     value,16      error,duplicate coordinates
 pair,A,C                pair,P,Q
@@ -265,6 +390,7 @@ pair,A,C                pair,P,Q
 ```
 
 - **Task A** passes when `d²` matches and the returned pair, in either order, is one of the listed pairs.
+
 - **Error cases** pass when an `IllegalArgumentException` is thrown, by `FixtureReader` or by the task method, and its message contains the given words.
 
 ### 7.3 Case list
@@ -275,6 +401,7 @@ pair,A,C                pair,P,Q
 | B | `B1`–`B4` (required), `B5-large`, `B6-one-move`, `B7-empty`, `B8-length-mismatch`, `B9-dupe-id`, `B10-unknown-id`, `B-ref` |
 | C | `C1`–`C5` (required), `C6-sorted`, `C7-reverse`, `C8-many-dupes`, `C9-empty`, `C10-k-zero`, `C11-k-too-big`, `C12-negative`, `C-ref` |
 
+
 | Case | What it checks |
 | - | - |
 | `A5-tie` | Several pairs share the minimum distance; any one is accepted |
@@ -284,6 +411,7 @@ pair,A,C                pair,P,Q
 | `B6-one-move` | The last planned ID dispatched first gives `n − 1` inversions |
 | `C6-sorted`, `C7-reverse` | Already sorted and reverse-sorted input |
 | `C8-many-dupes` | 100,000 values from 0–9, `k = 50,000` |
+
 
 The remaining cases are invalid input from SRS 4.1, 5.1, and 6.1.
 
@@ -297,6 +425,7 @@ The remaining cases are invalid input from SRS 4.1, 5.1, and 6.1.
 | `B-ref` | A random shuffle of 1–40 IDs | Two nested loops |
 | `C-ref` | 1–40 values in 0..10, so duplicates are common, and a random valid `k` | Full sort, then index `k − 1` |
 
+
 Each check shows as one line, for example `[PASS] A-ref  500 random inputs match brute force`. On a failure, it prints the first input that disagreed.
 
 ### 7.5 Big fixtures
@@ -305,7 +434,7 @@ Each check shows as one line, for example `[PASS] A-ref  500 random inputs match
 
 ### 7.6 Output
 
-```text
+```
 == Task A: Closest Delivery Locations ==
 [PASS] A3  Closest pair lies in different halves of the split
        expected: A, C; d² = 16
@@ -323,7 +452,7 @@ Task A pair IDs print in alphabetical order. The full suite prints each task's s
 
 ### 8.1 Menu
 
-```text
+```
 Pioneer Delivery Part II — Test Suite
   1  Run all tests
   2  Task A: Closest Delivery Locations
@@ -336,7 +465,9 @@ Choice:
 `App` reads one line at a time from standard input.
 
 - `1`–`4` run the selected tests, print the results, and show the menu again.
+
 - `0` exits with status 0. End of input also exits with status 0.
+
 - Anything else prints `Unknown choice: <text>` and shows the menu again.
 
 The temporary `task-a`, `task-b`, and `task-c` placeholder commands are removed.
@@ -349,17 +480,23 @@ The temporary `task-a`, `task-b`, and `task-c` placeholder commands are removed.
 
 `Benchmark` is a separate main class:
 
-```bash
+```
 ./mvnw -q -DskipTests package
 java -cp target/classes edu.pioneer.Benchmark
 ```
 
 - **Sizes:** 100, 1,000, 5,000, 10,000, and 100,000.
+
 - **Inputs:** generated from the fixed seed `413`.
+
   - Task A: distinct random points with coordinates in ±1,000,000.
+
   - Task B: a random shuffle of `n` IDs.
+
   - Task C: random values in 0..1,000,000 with `k = n / 2`.
+
 - **Method:** five warm-up runs, then eleven timed runs per size with `System.nanoTime`. The median time is reported.
+
 - **Output:** one table per task with size, median milliseconds, and the ratio to the previous size.
 
 The Task D report explains the extra sizes: small sizes are noisy, and the range up to 100,000 makes `O(n)` and `O(n log n)` growth easier to tell apart.
@@ -369,11 +506,17 @@ The Task D report explains the extra sizes: small sizes are noisy, and the range
 `package-submission.sh` builds the Canvas ZIP. It is a local tool and does not go in the ZIP.
 
 1. Run `./mvnw -q clean package`, which also runs the tests.
+
 2. Stop if `reports/TaskD.pdf` is missing.
+
 3. Delete and recreate `submission/raw/`.
+
 4. Copy in `pom.xml`, `mvnw`, `mvnw.cmd`, `.mvn/`, `run.sh`, `run.cmd`, `src/`, `tests/`, `README.md`, and `reports/TaskD.pdf`.
+
 5. Record the suite output by running `printf '1\n0\n' | java -jar target/pioneer-delivery-part2.jar` and saving it to `submission/raw/tests/results/suite-output.txt`.
+
 6. Create `submission/pioneer-delivery-part2.zip` from `raw/` with `jar --create --no-manifest`.
+
 7. Extract the ZIP into a temporary folder, check its file list matches `raw/`, and run `./mvnw -q test` there.
 
 `submission/` is ignored by Git (SRS 9.2).
@@ -392,3 +535,5 @@ The Task D report explains the extra sizes: small sizes are noisy, and the range
 | 7 Task D | Section 9; report in `reports/` |
 | 8 Verification | Sections 7.3 and 7.4 |
 | 9 Submission | Section 10 |
+
+
