@@ -2,11 +2,11 @@
 
 - **Project:** Pioneer Delivery Company's Algorithm Portfolio — Part II: Divide and Conquer
 - **Course:** CS 413 — Analysis of Algorithms
-- **Version:** 0.1
+- **Version:** 0.2
 - **Date:** October 19, 2026
 - **Status:** Draft for review; not yet accepted for implementation planning
 - **Requirements authority:** `CS413_PA-part2-2026Fall.pdf`
-- **Supersedes:** Rough Part II requirements notes (`shitassSRS.odt`)
+- **Supersedes:** SRS Part II v0.1
 
 ## 1. Purpose and scope
 
@@ -27,12 +27,13 @@ Part II is independent of Part I. It does not reuse Part I's scheduling problem,
 | Language/runtime | JDK 25 |
 | Build | Maven |
 | Interface | Command-line only; no JavaFX or other GUI |
-| Input | CSV files |
+| Test data | CSV fixture files |
 | Task independence | Tasks A, B, and C each run and test independently |
 | Version control | Git; separate local Part II project and repository |
 | Inversion count type | Java `long` |
+| AI assistance | Permitted by the instructor (section 3.3) |
 
-These are team decisions, not additional instructor requirements unless explicitly stated below. Exact CSV schemas and CLI syntax are not yet accepted; see section 10.
+These are team decisions, not additional instructor requirements unless explicitly stated below. Exact CSV schemas and CLI syntax are not yet accepted; see section 11.
 
 ## 3. General requirements
 
@@ -47,9 +48,16 @@ These are team decisions, not additional instructor requirements unless explicit
 
 ### 3.2 Input handling
 
+The assignment allows input through files, command-line arguments, or a documented program interface. Part II uses:
+
+- a documented Java method for each task as its input interface;
+- CSV fixture files as the stored test inputs.
+
+The CLI does not accept user-supplied datasets (section 8.3).
+
 - Each task reads its own input. There is no shared dataset across tasks.
 - When an input violates a task's assumptions, the task shall report an error and shall not report an algorithmic result for that input.
-- A file-open or read failure is an error.
+- A fixture file that cannot be opened or read is an error.
 
 Part I's skip-and-log handling of invalid rows, `.csv` extension check, empty-file-as-valid rule, and processing report do not apply to Part II unless they are adopted later as a design decision.
 
@@ -177,20 +185,61 @@ Additional required tests:
 
 ## 7. Task D requirements — validation and algorithm analysis
 
-Task D is a PDF report of approximately 1–2 pages. For each of Tasks A–C, it shall include:
+Task D is a PDF report of about 1–2 pages. For each of Tasks A–C it shall cover:
 
 | Section | Required content |
 |---|---|
-| Algorithm design | How the algorithm divides the problem, solves subproblems, and combines results; for Task C, how it discards the unneeded partition |
-| Complexity | Asymptotic running time and auxiliary space, with justification |
-| Correctness testing | Comparison against a simple reference method on small inputs, plus at least one additional edge case per task |
-| Performance evidence | Approximate execution times on at least three increasing input sizes, such as `n = 100, 1,000, 5,000`, compared with the expected growth |
+| Design | How the problem is split, how the smaller problems are solved, and how their answers are combined. For Task C, which part is thrown away and why. |
+| Complexity | Running time and extra memory, with a short reason for each |
+| Correctness testing | How results were checked against a simple method on small inputs, plus at least one extra edge case per task |
+| Performance | Rough running times for at least three growing input sizes, such as `n = 100, 1,000, 5,000`, and whether the growth matches the expected complexity |
 
-The complexity section shall also explain why Task A's combine step does not examine all pairs in the strip and the role of a good deterministic pivot in Task C.
+The complexity section shall also explain:
 
-Timing results are machine-dependent and need not match a fixed benchmark.
+- why Task A's combine step does not compare every pair of points in the strip;
+- why Task C needs a good pivot, and how median-of-medians guarantees one.
 
-## 8. Verification requirements
+Timing results depend on the machine and need not match a fixed benchmark.
+
+### 7.1 Writing style (team requirement)
+
+- Use plain language. Use a technical term only when it is needed, and define it the first time it appears.
+- Keep each explanation as short as it can be while staying accurate. Do not trade correctness for simplicity.
+- Prefer a short example or one-line reason over a long derivation.
+
+## 8. CLI and test-suite requirements (team)
+
+These requirements come from the team, not the assignment.
+
+### 8.1 Easy run
+
+- After cloning, a user with only JDK 25 or newer installed shall be able to build and start the CLI with one documented command. A separate Maven installation shall not be required.
+- The README shall give that command first, before any other build detail.
+- On the first run, the Maven Wrapper may need network access to download Maven and dependencies. The README shall say so.
+
+### 8.2 Test suite
+
+- The CLI shall offer four operations, each started by one command:
+  - run the full suite;
+  - run Task A's tests only;
+  - run Task B's tests only;
+  - run Task C's tests only.
+- The same tests shall also run without the CLI through `./mvnw test`, and both routes shall use the same test cases and fixture files.
+- For each test, the output shall show:
+  - test ID, such as `A3`;
+  - a one-line description of what is being checked;
+  - the expected result;
+  - the actual result;
+  - `PASS` or `FAIL`.
+- After the tests run, the output shall show a summary of passed and failed counts.
+- The CLI shall exit with status 0 when every selected test passes, and non-zero otherwise.
+- The suite shall include the required tests, the additional tests, the invalid-input checks, and the reference-method checks from section 9.
+
+### 8.3 No user-supplied datasets
+
+The assignment accepts a documented program interface as the input method, so the CLI does not need to read user-supplied data. The CLI shall not offer commands that run a task on a user-supplied file or argument list. The README shall document each task's Java method and the CSV fixture format.
+
+## 9. Verification requirements
 
 The implementation shall test every required case in sections 4–6 and the additional cases they list. Small-input results shall also be checked against reference methods:
 
@@ -211,28 +260,48 @@ Tests shall also verify that:
 
 No test results, timings, or implementation completion are claimed until executable code exists.
 
-## 9. Submission requirements
+## 10. Submission requirements
 
-The final submission is one ZIP file uploaded to Canvas, containing:
+### 10.1 Required contents (instructor)
 
-- source code for Tasks A–C and anything needed to run them;
-- test inputs and outputs for the required and additional cases;
+The final submission is one ZIP file uploaded to Canvas, containing exactly:
+
+- source code for Tasks A–C and the code needed to run them and reproduce the tests, including the build files (`pom.xml`, Maven Wrapper) and the CLI and test sources;
+- test inputs and outputs for the required and additional cases: the fixture files, the expected results, and the recorded output of a final suite run;
 - a README listing the programming language, dependencies, input/output formats, and exact commands to run each algorithm and reproduce the tests;
 - the Task D report as a PDF.
 
+The ZIP shall not include items the assignment does not ask for, such as the SRS, SDS, `.git`, build output in `target/`, or the assignment PDF.
+
 Automated tests are encouraged but not required. A GitHub repository is recommended but does not replace the Canvas upload.
 
-## 10. Deferred scope
+### 10.2 Local packaging layout (team)
+
+- Submission files shall be assembled in a `submission/` directory at the project root. Git shall not track this directory.
+- `submission/raw/` shall hold exactly the files that go into the ZIP, laid out as they appear after extraction.
+- `submission/` shall also hold the ZIP file built from `submission/raw/`.
+- Extracting the ZIP shall produce the same files as `submission/raw/`.
+- Building and running the tests from an extracted copy shall succeed using the README commands.
+
+## 11. Deferred scope
 
 The following are design decisions, not accepted requirements:
 
-- exact CLI command syntax;
-- CSV schemas for each task, including headers, delimiters, and how Task B's two sequences and Task C's `k` are supplied;
-- whether invalid input stops at the first error or reports all errors, plus the exception types and exit codes used;
+- exact CLI command syntax and the one-command start script;
+- CSV fixture schemas for each task, including headers, delimiters, and how Task B's two sequences and Task C's `k` are stored;
+- the format of expected results and recorded suite output;
+- whether invalid input stops at the first error or reports all errors, plus the exception types used;
 - Java packages, class names, and method signatures;
-- output text layout, including whether Task A also shows the Euclidean distance;
+- test-output layout beyond section 8.2;
 - base-case size thresholds for Tasks A and C;
-- the timing method for Task D and how input data is generated;
-- the serialization format of fixtures in `tests/inputs` and `tests/expected`.
+- the timing method for Task D and how its input data is generated;
+- the ZIP filename and how it is built.
 
 The SDS will be written after this SRS is accepted.
+
+## 12. Revision history
+
+| Version | Date | Changes |
+|---|---|---|
+| 0.1 | October 19, 2026 | First draft from the assignment PDF and rough notes. AI-assistance question recorded as unresolved. Later the same day, updated with the instructor's answer: AI assistance and built-in data structures are allowed. |
+| 0.2 | October 19, 2026 | Section 7: Task D wording simplified, and a plain-language writing-style requirement added (7.1). New section 8: team CLI and test-suite requirements (one-command run; suite, A, B, and C test runs; descriptive PASS/FAIL output; also runnable through Maven; no user-supplied datasets). Section 3.2: input defined as a documented Java method plus CSV fixtures. Section 10: submission contents listed literally, plus the untracked `submission/raw/` and ZIP layout. Section 11: deferred scope updated. |
