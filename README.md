@@ -9,13 +9,13 @@ CS 413 Part II of the Pioneer Delivery Algorithm Portfolio. It will provide thre
 | C | What is the kth-smallest delivery time? | Median-of-medians selection, `O(n)` | Not implemented |
 | D | Validation and algorithm analysis | 1–2 page PDF report | Not written |
 
-Requirements are in [docs/SRS-Pioneer-Delivery-PartII-v0.2.md](docs/SRS-Pioneer-Delivery-PartII-v0.2.md), which is a draft under review.
+Requirements are in [docs/SRS-Pioneer-Delivery-PartII-v0.2.md](docs/SRS-Pioneer-Delivery-PartII-v0.2.md), the accepted requirements baseline.
 
 ## Current state
 
 The repository contains only build and CLI scaffolding. No algorithm is implemented, and no task produces a result. Each task command prints `not implemented yet` and exits with status 1.
 
-The command names (`task-a`, `task-b`, `task-c`) and input formats shown below are proposals and have not been accepted.
+The placeholder `task-a`, `task-b`, and `task-c` commands are temporary. Per the SRS (section 3.4), the final CLI will be a looping menu that runs the full test suite or one task's tests, with an exit option. It will not run tasks on user-supplied data.
 
 ## Development environment
 
@@ -51,14 +51,6 @@ java -jar target/pioneer-delivery-part2.jar          # usage (exit 0)
 java -jar target/pioneer-delivery-part2.jar task-a   # "not implemented yet" (exit 1)
 ```
 
-Proposed final usage (not implemented):
-
-```text
-java -jar target/pioneer-delivery-part2.jar task-a <locations.csv>
-java -jar target/pioneer-delivery-part2.jar task-b <dispatch.csv>
-java -jar target/pioneer-delivery-part2.jar task-c <times.csv> <k>
-```
-
 ## Project structure
 
 ```text
@@ -79,4 +71,5 @@ java -jar target/pioneer-delivery-part2.jar task-c <times.csv> <k>
 - Required and additional test fixtures and algorithm tests.
 - Reference-method (brute force, nested loops, sorting) checks.
 - Task D timing measurements and PDF report.
+- The looping test-suite menu (SRS section 3.4).
 - Final input/output format documentation.

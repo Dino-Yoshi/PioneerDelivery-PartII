@@ -16,3 +16,6 @@ Thumbs.db
 # Java
 *.class
 hs_err_pid*.log
+
+# Local submission assembly (SRS 9.2)
+/submission/
