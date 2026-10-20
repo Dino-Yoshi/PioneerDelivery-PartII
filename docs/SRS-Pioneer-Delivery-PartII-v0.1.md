@@ -39,7 +39,7 @@ These are team decisions, not additional instructor requirements unless explicit
 ### 3.1 Instructor requirements
 
 - Each of Tasks A–C shall be executable and testable independently.
-- Each core algorithm shall be implemented by the team. Standard-library data structures and sorting may be used only where a task permits it, and a library routine shall not replace a task's core algorithm.
+- Each core algorithm shall be implemented in project code. Built-in data structures may be used. Library sorting may be used only where a task permits it. A library routine shall not replace a task's core algorithm.
 - Each task shall handle the input assumptions stated in its section.
 - Invalid input shall produce a clear error message or a documented exception. Invalid input includes at least the conditions listed under each task.
 - Input and output formats shall be documented in the README.
@@ -53,16 +53,14 @@ These are team decisions, not additional instructor requirements unless explicit
 
 Part I's skip-and-log handling of invalid rows, `.csv` extension check, empty-file-as-valid rule, and processing report do not apply to Part II unless they are adopted later as a design decision.
 
-### 3.3 Unresolved clarification: "implement the algorithms yourself"
+### 3.3 Resolved clarification: "implement the algorithms yourself"
 
-The team has asked the instructor which interpretation applies:
+The team asked the instructor whether this instruction prohibits AI-generated implementations. The instructor answered that:
 
-| Option | Interpretation |
-|---|---|
-| A | Algorithms must be implemented from scratch instead of delegated to library routines. AI assistance is allowed. |
-| B | AI-generated implementations are not permitted, even when they reproduce the algorithm from scratch. |
+- AI assistance is allowed for this project.
+- Built-in data structures are allowed.
 
-As of this version, there is no answer. This SRS neither grants nor restricts AI assistance. Algorithm implementation work shall not begin until the question is resolved and the team authorizes it.
+"Implement the algorithms yourself" therefore means each core algorithm is implemented in project code rather than delegated to a library routine. Sorting remains limited to the uses each task permits.
 
 ## 4. Task A requirements — closest delivery locations
 
