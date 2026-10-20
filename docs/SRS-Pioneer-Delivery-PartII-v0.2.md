@@ -8,6 +8,30 @@
 - **Requirements authority:** `CS413_PA-part2-2026Fall.pdf`
 - **Supersedes:** SRS Part II v0.1
 
+## Revision history
+
+| Version | Date | Changes |
+|---|---|---|
+| 0.1 | October 19, 2026 | First draft from the assignment PDF and rough notes. AI-assistance question recorded as unresolved. Later the same day, updated with the instructor's answer: AI assistance and built-in data structures are allowed. |
+| 0.2 | October 19, 2026 | Task D wording simplified, and a plain-language writing-style requirement added (7.1). New team CLI and test-suite requirements (3.4): one-command start; a looping menu with suite, Task A, B, and C test runs and an exit option; descriptive PASS/FAIL output; tests also runnable through Maven; no user-supplied datasets. Input defined as a documented Java method plus CSV fixtures (3.2). Submission contents listed literally, plus the untracked `submission/raw/` and ZIP layout (9). Deferred scope updated (10). Revision history and table of contents added. |
+
+## Table of contents
+
+- [1. Purpose and scope](#1-purpose-and-scope)
+- [2. Accepted implementation baseline](#2-accepted-implementation-baseline)
+- [3. General requirements](#3-general-requirements)
+  - [3.1 Instructor requirements](#31-instructor-requirements)
+  - [3.2 Input handling](#32-input-handling)
+  - [3.3 Resolved clarification: "implement the algorithms yourself"](#33-resolved-clarification-implement-the-algorithms-yourself)
+  - [3.4 CLI and test-suite requirements (team)](#34-cli-and-test-suite-requirements-team)
+- [4. Task A requirements — closest delivery locations](#4-task-a-requirements--closest-delivery-locations)
+- [5. Task B requirements — counting dispatch-order inversions](#5-task-b-requirements--counting-dispatch-order-inversions)
+- [6. Task C requirements — selecting a delivery-time threshold](#6-task-c-requirements--selecting-a-delivery-time-threshold)
+- [7. Task D requirements — validation and algorithm analysis](#7-task-d-requirements--validation-and-algorithm-analysis)
+- [8. Verification requirements](#8-verification-requirements)
+- [9. Submission requirements](#9-submission-requirements)
+- [10. Deferred scope](#10-deferred-scope)
+
 ## 1. Purpose and scope
 
 Pioneer Delivery wants three operational questions answered with divide-and-conquer algorithms:
@@ -33,7 +57,7 @@ Part II is independent of Part I. It does not reuse Part I's scheduling problem,
 | Inversion count type | Java `long` |
 | AI assistance | Permitted by the instructor (section 3.3) |
 
-These are team decisions, not additional instructor requirements unless explicitly stated below. Exact CSV schemas and CLI syntax are not yet accepted; see section 11.
+These are team decisions, not additional instructor requirements unless explicitly stated below. Exact CSV schemas and CLI syntax are not yet accepted; see section 10.
 
 ## 3. General requirements
 
@@ -53,7 +77,7 @@ The assignment allows input through files, command-line arguments, or a document
 - a documented Java method for each task as its input interface;
 - CSV fixture files as the stored test inputs.
 
-The CLI does not accept user-supplied datasets (section 8.3).
+The CLI does not accept user-supplied datasets (section 3.4.3).
 
 - Each task reads its own input. There is no shared dataset across tasks.
 - When an input violates a task's assumptions, the task shall report an error and shall not report an algorithmic result for that input.
@@ -69,6 +93,41 @@ The team asked the instructor whether this instruction prohibits AI-generated im
 - Built-in data structures are allowed.
 
 "Implement the algorithms yourself" therefore means each core algorithm is implemented in project code rather than delegated to a library routine. Sorting remains limited to the uses each task permits.
+
+### 3.4 CLI and test-suite requirements (team)
+
+These requirements come from the team, not the assignment.
+
+#### 3.4.1 Easy run
+
+- After cloning, a user with only JDK 25 or newer installed shall be able to build and start the CLI with one documented command. A separate Maven installation shall not be required.
+- The README shall give that command first, before any other build detail.
+- On the first run, the Maven Wrapper may need network access to download Maven and dependencies. The README shall say so.
+
+#### 3.4.2 Menu and test suite
+
+- The CLI shall be a looping menu with these options:
+  - run the full suite;
+  - run Task A's tests only;
+  - run Task B's tests only;
+  - run Task C's tests only;
+  - exit.
+- After an option finishes, the CLI shall show the menu again.
+- Choosing exit shall end the program normally with status 0. End of input (for example, Ctrl+D) shall also end the program normally.
+- An unrecognized choice shall show a short message and the menu again. It shall not end the program.
+- The same tests shall also run without the CLI through `./mvnw test`, and both routes shall use the same test cases and fixture files. `./mvnw test` shall fail when any test fails.
+- For each test, the output shall show:
+  - test ID, such as `A3`;
+  - a one-line description of what is being checked;
+  - the expected result;
+  - the actual result;
+  - `PASS` or `FAIL`.
+- After each run, the output shall show a summary of passed and failed counts.
+- The suite shall include the required tests, the additional tests, the invalid-input checks, and the reference-method checks from section 8.
+
+#### 3.4.3 No user-supplied datasets
+
+The assignment accepts a documented program interface as the input method, so the CLI does not need to read user-supplied data. The CLI shall not offer options that run a task on a user-supplied file or values. The README shall document each task's Java method and the CSV fixture format.
 
 ## 4. Task A requirements — closest delivery locations
 
@@ -207,39 +266,7 @@ Timing results depend on the machine and need not match a fixed benchmark.
 - Keep each explanation as short as it can be while staying accurate. Do not trade correctness for simplicity.
 - Prefer a short example or one-line reason over a long derivation.
 
-## 8. CLI and test-suite requirements (team)
-
-These requirements come from the team, not the assignment.
-
-### 8.1 Easy run
-
-- After cloning, a user with only JDK 25 or newer installed shall be able to build and start the CLI with one documented command. A separate Maven installation shall not be required.
-- The README shall give that command first, before any other build detail.
-- On the first run, the Maven Wrapper may need network access to download Maven and dependencies. The README shall say so.
-
-### 8.2 Test suite
-
-- The CLI shall offer four operations, each started by one command:
-  - run the full suite;
-  - run Task A's tests only;
-  - run Task B's tests only;
-  - run Task C's tests only.
-- The same tests shall also run without the CLI through `./mvnw test`, and both routes shall use the same test cases and fixture files.
-- For each test, the output shall show:
-  - test ID, such as `A3`;
-  - a one-line description of what is being checked;
-  - the expected result;
-  - the actual result;
-  - `PASS` or `FAIL`.
-- After the tests run, the output shall show a summary of passed and failed counts.
-- The CLI shall exit with status 0 when every selected test passes, and non-zero otherwise.
-- The suite shall include the required tests, the additional tests, the invalid-input checks, and the reference-method checks from section 9.
-
-### 8.3 No user-supplied datasets
-
-The assignment accepts a documented program interface as the input method, so the CLI does not need to read user-supplied data. The CLI shall not offer commands that run a task on a user-supplied file or argument list. The README shall document each task's Java method and the CSV fixture format.
-
-## 9. Verification requirements
+## 8. Verification requirements
 
 The implementation shall test every required case in sections 4–6 and the additional cases they list. Small-input results shall also be checked against reference methods:
 
@@ -260,9 +287,9 @@ Tests shall also verify that:
 
 No test results, timings, or implementation completion are claimed until executable code exists.
 
-## 10. Submission requirements
+## 9. Submission requirements
 
-### 10.1 Required contents (instructor)
+### 9.1 Required contents (instructor)
 
 The final submission is one ZIP file uploaded to Canvas, containing exactly:
 
@@ -275,7 +302,7 @@ The ZIP shall not include items the assignment does not ask for, such as the SRS
 
 Automated tests are encouraged but not required. A GitHub repository is recommended but does not replace the Canvas upload.
 
-### 10.2 Local packaging layout (team)
+### 9.2 Local packaging layout (team)
 
 - Submission files shall be assembled in a `submission/` directory at the project root. Git shall not track this directory.
 - `submission/raw/` shall hold exactly the files that go into the ZIP, laid out as they appear after extraction.
@@ -283,25 +310,18 @@ Automated tests are encouraged but not required. A GitHub repository is recommen
 - Extracting the ZIP shall produce the same files as `submission/raw/`.
 - Building and running the tests from an extracted copy shall succeed using the README commands.
 
-## 11. Deferred scope
+## 10. Deferred scope
 
 The following are design decisions, not accepted requirements:
 
-- exact CLI command syntax and the one-command start script;
+- the exact start command or script, menu wording, and how choices are entered;
 - CSV fixture schemas for each task, including headers, delimiters, and how Task B's two sequences and Task C's `k` are stored;
 - the format of expected results and recorded suite output;
 - whether invalid input stops at the first error or reports all errors, plus the exception types used;
 - Java packages, class names, and method signatures;
-- test-output layout beyond section 8.2;
+- test-output layout beyond section 3.4.2;
 - base-case size thresholds for Tasks A and C;
 - the timing method for Task D and how its input data is generated;
 - the ZIP filename and how it is built.
 
 The SDS will be written after this SRS is accepted.
-
-## 12. Revision history
-
-| Version | Date | Changes |
-|---|---|---|
-| 0.1 | October 19, 2026 | First draft from the assignment PDF and rough notes. AI-assistance question recorded as unresolved. Later the same day, updated with the instructor's answer: AI assistance and built-in data structures are allowed. |
-| 0.2 | October 19, 2026 | Section 7: Task D wording simplified, and a plain-language writing-style requirement added (7.1). New section 8: team CLI and test-suite requirements (one-command run; suite, A, B, and C test runs; descriptive PASS/FAIL output; also runnable through Maven; no user-supplied datasets). Section 3.2: input defined as a documented Java method plus CSV fixtures. Section 10: submission contents listed literally, plus the untracked `submission/raw/` and ZIP layout. Section 11: deferred scope updated. |
