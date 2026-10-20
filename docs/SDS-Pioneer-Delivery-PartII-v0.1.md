@@ -8,7 +8,7 @@
 
 - **Date:** October 19, 2026
 
-- **Status:** Draft for review; not yet accepted for implementation
+- **Status:** Accepted team baseline for implementation
 
 - **Requirements authority:** [SRS-Pioneer-Delivery-PartII-v0.3.md](SRS-Pioneer-Delivery-PartII-v0.3.md)
 
@@ -16,7 +16,7 @@
 
 | Version | Date | Changes |
 | - | - | - |
-| 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. Later the same day: Tasks A–C pseudocode rewritten in plain steps with clearer names, and a worked example added for each task using an assignment test case. Plain-language step sequence added to Task A (4.1), with a link to a separate illustrated Task A walkthrough. October 20: plain-language step sequence and two-pointer merge summary added to Task B (5.1), and a step sequence with rank bands added to Task C (6.1). |
+| 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. Later the same day: Tasks A–C pseudocode rewritten in plain steps with clearer names, and a worked example added for each task using an assignment test case. Plain-language step sequence added to Task A (4.1), with a link to a separate illustrated Task A walkthrough. October 20: plain-language step sequence and two-pointer merge summary added to Task B (5.1), and a step sequence with rank bands added to Task C (6.1), with a note on how k shifts. Accepted as the team baseline for implementation. |
 
 
 ## Table of Contents
