@@ -1,0 +1,394 @@
+# Pioneer Delivery — Software Design Specification, Part II
+
+- **Project:** Pioneer Delivery Company's Algorithm Portfolio — Part II: Divide and Conquer
+- **Course:** CS 413 — Analysis of Algorithms
+- **Version:** 0.1
+- **Date:** October 19, 2026
+- **Status:** Draft for review; not yet accepted for implementation
+- **Requirements authority:** [SRS-Pioneer-Delivery-PartII-v0.3.md](SRS-Pioneer-Delivery-PartII-v0.3.md)
+
+## Revision History
+
+| Version | Date | Changes |
+| - | - | - |
+| 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. |
+
+## Table of Contents
+
+- [1. Design Goals and Baseline](#1-design-goals-and-baseline)
+- [2. Module Structure](#2-module-structure)
+- [3. Task Interfaces](#3-task-interfaces)
+- [4. Task A Design](#4-task-a-design)
+- [5. Task B Design](#5-task-b-design)
+- [6. Task C Design](#6-task-c-design)
+- [7. Test Suite Design](#7-test-suite-design)
+- [8. CLI Design](#8-cli-design)
+- [9. Benchmark Design](#9-benchmark-design)
+- [10. Submission Packaging](#10-submission-packaging)
+- [11. Requirements Traceability](#11-requirements-traceability)
+
+## 1. Design Goals and Baseline
+
+The design aims for the simplest structure a human developer can read without explanation. Each task is a single class with one public method. The test suite and CLI call those methods; the algorithms do not read files, print output, or know about the suite.
+
+| Decision | Accepted design |
+| - | - |
+| Java | JDK 25 (`--release 25`) |
+| Build | Maven, run through the Maven Wrapper |
+| Runtime dependencies | None; JUnit 5 is test-only |
+| Package layout | One package per feature |
+| Invalid input | `IllegalArgumentException` at the first problem, with a specific message |
+| Task A | Divide-and-conquer closest pair; brute force at `n <= 3` |
+| Task B | Rank conversion plus merge-sort inversion count |
+| Task C | Median-of-medians selection; sort directly at `n <= 5` |
+| Test cases | One shared case list in `src/main`, used by the CLI menu and by JUnit |
+| Fixtures | One input file and one expected file per case, in `tests/` |
+| CLI | Looping numbered menu, started by `run.sh` / `run.cmd` |
+| Timing | Separate `Benchmark` main class |
+| Task D report | `reports/TaskD.odt`, exported to `reports/TaskD.pdf` |
+
+## 2. Module Structure
+
+```text
+edu.pioneer
+├── App                         looping menu (entry point)
+├── Benchmark                   Task D timing (separate entry point)
+├── closestpair                 Task A
+│   ├── Location                record (String id, int x, int y)
+│   ├── ClosestPair             record (String firstId, String secondId, long squaredDistance)
+│   └── ClosestPairFinder
+├── inversions                  Task B
+│   └── InversionCounter
+├── selection                   Task C
+│   └── KthSmallestSelector
+└── suite                       shared test suite
+    ├── Task                    enum A, B, C with display titles
+    ├── TestCase                record (String id, String description)
+    ├── CaseCatalog             the list of cases for each task
+    ├── FixtureReader           reads input and expected CSV files
+    ├── CheckResult             record (id, description, expected, actual, passed)
+    ├── SuiteRunner             runs cases and random reference checks
+    ├── ReferenceChecks         brute force, nested loops, sorting (testing only)
+    ├── ResultPrinter           formats results and summaries
+    └── FixtureGenerator        one-time generator for the two big fixtures
+
+src/test/java/edu/pioneer/suite/SuiteTest     JUnit entry: one dynamic test per case
+```
+
+The reference checks live in `src/main` because the CLI runs them, but only the suite calls them. No task class calls another task class.
+
+## 3. Task Interfaces
+
+These three methods are the documented input interface (SRS 3.2). Each copies its input and never modifies the caller's data.
+
+```text
+ClosestPair ClosestPairFinder.findClosestPair(List<Location> locations)
+long        InversionCounter.countInversions(List<String> planned, List<String> actual)
+int         KthSmallestSelector.selectKthSmallest(int[] times, int k)
+```
+
+Each method checks its input before running the algorithm and throws `IllegalArgumentException` at the first problem found. A `null` argument or `null` element is also rejected this way.
+
+| Task | Condition | Message contains |
+| - | - | - |
+| A | Fewer than two locations | `at least two locations` |
+| A | Repeated ID | `duplicate ID` |
+| A | Repeated `(x, y)` | `duplicate coordinates` |
+| A | Coordinate outside ±1,000,000,000 | `out of range` |
+| B | Empty sequence | `at least one` |
+| B | Different lengths | `different lengths` |
+| B | ID repeated within a sequence | `duplicate ID` |
+| B | ID in one sequence only | `not in planned` |
+| C | Empty array | `at least one` |
+| C | Negative time | `negative` |
+| C | `k` outside `1..n` | `out of range` |
+
+A non-integer value cannot reach these methods, because their parameters are already integers. `FixtureReader` checks this when reading a file and throws `IllegalArgumentException` with `not an integer`. Messages also name the offending value, for example `duplicate coordinates (3, 4) for IDs B and E`.
+
+## 4. Task A Design
+
+### 4.1 Approach
+
+Sort the points once by x, and once by y. Split the x-sorted list in half by position, and split the y-sorted list into the same two halves by checking which half each point belongs to. Solve each half, then check a narrow strip around the dividing line for a closer pair that crosses it.
+
+```text
+findClosestPair(locations):
+    validate(locations)
+    byX = copy sorted by (x, then y)
+    byY = copy sorted by (y, then x)
+    return closest(byX, byY)
+
+closest(byX, byY):
+    if size <= 3:
+        return bruteForce(byX)
+
+    mid = size / 2
+    leftX = byX[0 .. mid-1]
+    rightX = byX[mid .. size-1]
+    leftSet = identity set of leftX
+    midX = byX[mid - 1].x
+
+    // Split byY by membership, keeping y order
+    leftY, rightY = empty lists
+    for p in byY:
+        if p in leftSet: leftY.add(p) else: rightY.add(p)
+
+    best = smaller of closest(leftX, leftY) and closest(rightX, rightY)
+
+    // Strip: points whose horizontal distance to the line is smaller than best
+    strip = [p in byY where (p.x - midX)² < best.squaredDistance]
+    for i in 0 .. strip.size-1:
+        for j in i+1 .. strip.size-1 while (strip[j].y - strip[i].y)² < best.squaredDistance:
+            best = smaller of best and pair(strip[i], strip[j])
+
+    return best
+```
+
+### 4.2 Design notes
+
+- **Tied x-coordinates.** The split is by position in `byX`, and `leftSet` records which points went left. Points with the same x as the dividing line can land on either side, but each is placed by identity, not by comparing its x to `midX` (SRS 4.2).
+- **No re-sorting.** `leftY` and `rightY` come from one pass over `byY`, so they are already sorted by y.
+- **Strip bound.** Because both halves have no pair closer than `best`, at most a constant number of strip points (7 in the standard argument) can follow any point within `best` in y order. The inner loop therefore stops after a constant number of steps.
+- **All distances are squared** `long` values, so no square roots or floating point are used. The coordinate limit keeps `d²` within `long` range (SRS 4.1).
+- **Ties.** On equal distances, the first pair found is kept. Any minimizing pair is acceptable.
+
+### 4.3 Complexity
+
+The two initial sorts take `O(n log n)`. Each recursion level does `O(n)` work (splitting `byY` and scanning the strip), and there are `O(log n)` levels, so the total is `O(n log n)`. Extra memory is `O(n)`: the lists alive at any one time along a recursion path add up to `n + n/2 + n/4 + … < 2n`.
+
+## 5. Task B Design
+
+### 5.1 Approach
+
+Give each ID its position in `planned` (1, 2, 3, …). Replace each ID in `actual` with that position. Count inversions in the resulting array with merge sort.
+
+```text
+countInversions(planned, actual):
+    validate(planned, actual)
+    rankOf = map from planned[i] to i + 1
+    ranks = [rankOf[id] for id in actual]
+    return sortAndCount(ranks, 0, n - 1, buffer)
+
+sortAndCount(a, lo, hi, buffer):
+    if lo >= hi: return 0
+    mid = (lo + hi) / 2
+    count = sortAndCount(a, lo, mid) + sortAndCount(a, mid + 1, hi)
+
+    // Merge; when a right value is taken first, it is smaller than every value left in the left half
+    i = lo, j = mid + 1
+    while both halves have values:
+        if a[i] <= a[j]: take a[i]
+        else: take a[j]; count += (mid - i + 1)
+    copy remaining values, then copy buffer back into a[lo .. hi]
+    return count
+```
+
+### 5.2 Design notes
+
+- **Cross-half count.** When `a[j]` from the right half is taken before `a[i]`, every value still waiting in the left half is larger than `a[j]` but came earlier, so each forms one inversion. That is `mid - i + 1` inversions at once.
+- **Count type.** `count` is a `long`. The 100,000-element reversed case gives 4,999,950,000, which is larger than an `int` can hold.
+- **Validation** builds `rankOf` from `planned`; a repeat there is a duplicate. While building `ranks`, an ID missing from `rankOf` is `not in planned`, and an ID seen twice in `actual` is a duplicate.
+- One `buffer` array of size `n` is allocated once and reused by every merge.
+
+### 5.3 Complexity
+
+Building the map and rank array is `O(n)`. Merge sort is `O(n log n)`: `O(log n)` levels with `O(n)` merging per level. Extra memory is `O(n)` for the map, ranks, and buffer, plus `O(log n)` recursion depth.
+
+## 6. Task C Design
+
+### 6.1 Approach
+
+Pick a pivot that is guaranteed to be near the middle, split the values into less-than, equal-to, and greater-than groups, and continue only in the group that contains rank `k`.
+
+```text
+selectKthSmallest(times, k):
+    validate(times, k)
+    return select(copy of times, k)
+
+select(values, k):
+    if values.length <= 5:
+        sort values; return values[k - 1]
+
+    // Pivot: median of the medians of groups of five
+    medians = for each group of up to 5 values: sort the group, take its middle value
+    pivot = select(medians, (medians.length + 1) / 2)
+
+    less, equal, greater = three-way partition of values around pivot
+
+    if k <= less.length: return select(less, k)
+    if k <= less.length + equal.length: return pivot
+    return select(greater, k - less.length - equal.length)
+```
+
+### 6.2 Design notes
+
+- **Adjusting k.** Discarding the `less` group removes the `less.length` smallest values, and discarding `equal` removes the next `equal.length`. So when continuing in `greater`, `k` drops by both counts. When continuing in `less`, nothing smaller was removed, so `k` stays the same.
+- **Duplicates.** All copies of the pivot go into `equal`, so repeated values never cause an endless loop. If every value is the same, the answer is found in one step.
+- **Why the pivot is good.** At least half of the group medians are at most the pivot, and each of those medians has two more values at most it in its group. So roughly 3/10 of all values are at most the pivot, and likewise at least it. Each recursive step therefore keeps at most about 7/10 of the values. That guarantee is what makes the worst case linear; a random pivot only makes it linear on average.
+- Sorting is used only on groups of at most five and on base cases of at most five values (SRS 6.2).
+
+### 6.3 Complexity
+
+`T(n) <= T(n/5) + T(7n/10) + O(n)`. Since `1/5 + 7/10 < 1`, the work shrinks geometrically, giving `O(n)` time. Extra memory is `O(n)`: the three partition arrays and the medians array are new arrays, and their sizes shrink geometrically down the recursion.
+
+## 7. Test Suite Design
+
+### 7.1 One case list, two ways to run it
+
+`CaseCatalog` lists every case for each task, in display order. `SuiteRunner.run(Task)` runs that task's cases and its random reference check, and returns a `List<CheckResult>`. Two callers use it:
+
+- `App` (the menu) prints the results with `ResultPrinter`.
+- `SuiteTest` (JUnit) uses `@TestFactory` to turn each `CheckResult` into one dynamic test named like `A3 Closest pair lies in different halves of the split`. The test fails with the expected and actual text when `passed` is false, so `./mvnw test` fails if any case fails.
+
+Fixture paths are relative to the project root. `run.sh`, `run.cmd`, and Maven all run from there.
+
+### 7.2 Fixture files
+
+Each case has `tests/inputs/<ID>.csv` and `tests/expected/<ID>.csv`.
+
+Input files:
+
+```text
+Task A (header, then one location per row)     Task B (labeled rows)       Task C (labeled rows)
+id,x,y                                         planned,A,B,C,D,E           k,5
+A,-3,1                                         actual,A,C,D,B,E            times,18,4,29,11,4,16,35,9,22
+B,-3,11
+```
+
+Expected files use one label per line:
+
+```text
+Task A                  Task A, tied case             Task B           Task C        Invalid input (any task)
+squared_distance,16     squared_distance,1            inversions,2     value,16      error,duplicate coordinates
+pair,A,C                pair,P,Q
+                        pair,R,S
+```
+
+- **Task A** passes when `d²` matches and the returned pair, in either order, is one of the listed pairs.
+- **Error cases** pass when an `IllegalArgumentException` is thrown, by `FixtureReader` or by the task method, and its message contains the given words.
+
+### 7.3 Case list
+
+| Task | Case IDs |
+| - | - |
+| A | `A1`–`A4` (required), `A5-tie`, `A6-shared-x`, `A7-large-coords`, `A8-one-point`, `A9-dupe-id`, `A10-dupe-coords`, `A11-out-of-range`, `A12-non-integer`, `A-ref` |
+| B | `B1`–`B4` (required), `B5-large`, `B6-one-move`, `B7-empty`, `B8-length-mismatch`, `B9-dupe-id`, `B10-unknown-id`, `B-ref` |
+| C | `C1`–`C5` (required), `C6-sorted`, `C7-reverse`, `C8-many-dupes`, `C9-empty`, `C10-k-zero`, `C11-k-too-big`, `C12-negative`, `C-ref` |
+
+| Case | What it checks |
+| - | - |
+| `A5-tie` | Several pairs share the minimum distance; any one is accepted |
+| `A6-shared-x` | Several points share the dividing x-coordinate |
+| `A7-large-coords` | Coordinates at ±1,000,000,000 give the exact `d²` with no overflow |
+| `B5-large` | 100,000 IDs fully reversed give 4,999,950,000 |
+| `B6-one-move` | The last planned ID dispatched first gives `n − 1` inversions |
+| `C6-sorted`, `C7-reverse` | Already sorted and reverse-sorted input |
+| `C8-many-dupes` | 100,000 values from 0–9, `k = 50,000` |
+
+The remaining cases are invalid input from SRS 4.1, 5.1, and 6.1.
+
+### 7.4 Random reference checks
+
+`A-ref`, `B-ref`, and `C-ref` each generate 500 small random inputs from the fixed seed `413` and compare the algorithm with the simple method in `ReferenceChecks`:
+
+| Check | Random input | Compared with |
+| - | - | - |
+| `A-ref` | 2–40 distinct points with coordinates in −20..20, so ties are common | All-pairs brute force: same `d²`, and the returned pair really is at that distance |
+| `B-ref` | A random shuffle of 1–40 IDs | Two nested loops |
+| `C-ref` | 1–40 values in 0..10, so duplicates are common, and a random valid `k` | Full sort, then index `k − 1` |
+
+Each check shows as one line, for example `[PASS] A-ref  500 random inputs match brute force`. On a failure, it prints the first input that disagreed.
+
+### 7.5 Big fixtures
+
+`FixtureGenerator` writes `B5-large` and `C8-many-dupes` (input and expected) once. The files are committed, and the generator is kept so they can be rebuilt.
+
+### 7.6 Output
+
+```text
+== Task A: Closest Delivery Locations ==
+[PASS] A3  Closest pair lies in different halves of the split
+       expected: A, C; d² = 16
+       actual:   A, C; d² = 16
+[PASS] A10-dupe-coords  Repeated coordinates are rejected
+       expected: error containing "duplicate coordinates"
+       actual:   error: duplicate coordinates (3, 4) for IDs B and E
+...
+Task A: 13 passed, 0 failed
+```
+
+Task A pair IDs print in alphabetical order. The full suite prints each task's section and then an overall total.
+
+## 8. CLI Design
+
+### 8.1 Menu
+
+```text
+Pioneer Delivery Part II — Test Suite
+  1  Run all tests
+  2  Task A: Closest Delivery Locations
+  3  Task B: Counting Dispatch-Order Inversions
+  4  Task C: Selecting a Delivery-Time Threshold
+  0  Exit
+Choice:
+```
+
+`App` reads one line at a time from standard input.
+
+- `1`–`4` run the selected tests, print the results, and show the menu again.
+- `0` exits with status 0. End of input also exits with status 0.
+- Anything else prints `Unknown choice: <text>` and shows the menu again.
+
+The temporary `task-a`, `task-b`, and `task-c` placeholder commands are removed.
+
+### 8.2 Start scripts
+
+`run.sh` and `run.cmd` change to the project directory, run `./mvnw -q -DskipTests package`, then `java -jar target/pioneer-delivery-part2.jar`. Tests are skipped during the build so that a failing case appears as `FAIL` in the menu instead of stopping the program from starting.
+
+## 9. Benchmark Design
+
+`Benchmark` is a separate main class:
+
+```bash
+./mvnw -q -DskipTests package
+java -cp target/classes edu.pioneer.Benchmark
+```
+
+- **Sizes:** 100, 1,000, 5,000, 10,000, and 100,000.
+- **Inputs:** generated from the fixed seed `413`.
+  - Task A: distinct random points with coordinates in ±1,000,000.
+  - Task B: a random shuffle of `n` IDs.
+  - Task C: random values in 0..1,000,000 with `k = n / 2`.
+- **Method:** five warm-up runs, then eleven timed runs per size with `System.nanoTime`. The median time is reported.
+- **Output:** one table per task with size, median milliseconds, and the ratio to the previous size.
+
+The Task D report explains the extra sizes: small sizes are noisy, and the range up to 100,000 makes `O(n)` and `O(n log n)` growth easier to tell apart.
+
+## 10. Submission Packaging
+
+`package-submission.sh` builds the Canvas ZIP. It is a local tool and does not go in the ZIP.
+
+1. Run `./mvnw -q clean package`, which also runs the tests.
+2. Stop if `reports/TaskD.pdf` is missing.
+3. Delete and recreate `submission/raw/`.
+4. Copy in `pom.xml`, `mvnw`, `mvnw.cmd`, `.mvn/`, `run.sh`, `run.cmd`, `src/`, `tests/`, `README.md`, and `reports/TaskD.pdf`.
+5. Record the suite output by running `printf '1\n0\n' | java -jar target/pioneer-delivery-part2.jar` and saving it to `submission/raw/tests/results/suite-output.txt`.
+6. Create `submission/pioneer-delivery-part2.zip` from `raw/` with `jar --create --no-manifest`.
+7. Extract the ZIP into a temporary folder, check its file list matches `raw/`, and run `./mvnw -q test` there.
+
+`submission/` is ignored by Git (SRS 9.2).
+
+## 11. Requirements Traceability
+
+| SRS | Design |
+| - | - |
+| 3.1, 3.2 Instructor requirements, input handling | Sections 3 and 7.2 |
+| 3.4.1 Easy run | Section 8.2 |
+| 3.4.2 Menu and test suite | Sections 7 and 8.1 |
+| 3.4.3 No user-supplied datasets | Section 8.1 (menu runs fixtures only) |
+| 4 Task A | Sections 3 and 4 |
+| 5 Task B | Sections 3 and 5 |
+| 6 Task C | Sections 3 and 6 |
+| 7 Task D | Section 9; report in `reports/` |
+| 8 Verification | Sections 7.3 and 7.4 |
+| 9 Submission | Section 10 |
