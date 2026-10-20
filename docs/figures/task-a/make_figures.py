@@ -1,4 +1,4 @@
-# Regenerate: python3 docs/figures/task-a/make_figures.py docs/figures/task-a
+# Draws the Task A walkthrough figures used in the slide deck. Run: python3 docs/figures/task-a/make_figures.py <output-dir>
 """Generates the Task A explainer figures as SVG files."""
 import math
 import os
