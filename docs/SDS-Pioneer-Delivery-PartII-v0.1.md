@@ -362,6 +362,8 @@ In short: **binary search on ranks. Each round picks a pivot guaranteed to be ne
 
 The rank bands come from the group sizes alone. In sorted order, smaller would hold ranks 1 to s, same ranks s + 1 to s + e, and larger the rest, but no group is sorted to find this.
 
+> **Key idea: k is a rank inside the current group, so it shifts when values below it are thrown away.** In C1 (k = 5), keeping "larger" throws away the 4 values below it: 3 in smaller and 1 in same. The 5th smallest overall is therefore the 1st smallest inside "larger": k = 5 − 3 − 1 = 1. Sorting "larger" gives [16, 18, 22, 29, 35], and its 1st value, 16, is the answer. Keeping "smaller" throws away nothing below, so k stays the same.
+
 For an illustrated, step-by-step walkthrough, see the slides in [figures/task-c/Task C Selecting the kth Smallest.pptx](figures/task-c/Task%20C%20Selecting%20the%20kth%20Smallest.pptx).
 
 ```
