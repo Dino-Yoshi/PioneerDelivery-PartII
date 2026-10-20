@@ -9,7 +9,7 @@ CS 413 Part II of the Pioneer Delivery Algorithm Portfolio. It will provide thre
 | C | What is the kth-smallest delivery time? | Median-of-medians selection, `O(n)` | Not implemented |
 | D | Validation and algorithm analysis | 1–2 page PDF report | Not written |
 
-Requirements are in [docs/SRS-Pioneer-Delivery-PartII-v0.2.md](docs/SRS-Pioneer-Delivery-PartII-v0.2.md), the accepted requirements baseline.
+Requirements are in [docs/SRS-Pioneer-Delivery-PartII-v0.3.md](docs/SRS-Pioneer-Delivery-PartII-v0.3.md), the accepted requirements baseline.
 
 ## Current state
 

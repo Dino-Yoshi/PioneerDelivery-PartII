@@ -4,7 +4,7 @@
 
 - **Course:** CS 413 — Analysis of Algorithms
 
-- **Version:** 0.2
+- **Version:** 0.3
 
 - **Date:** October 19, 2026
 
@@ -12,7 +12,7 @@
 
 - **Requirements authority:** `CS413_PA-part2-2026Fall.pdf`
 
-- **Supersedes:** SRS Part II v0.1
+- **Supersedes:** SRS Part II v0.2
 
 ## Revision History
 
@@ -20,6 +20,7 @@
 | - | - | - |
 | 0.1 | October 19, 2026 | First draft from the assignment PDF and rough notes. AI-assistance question recorded as unresolved. Later the same day, updated with the instructor's answer: AI assistance and built-in data structures are allowed. |
 | 0.2 | October 19, 2026 | Task D wording simplified, and a plain-language writing-style requirement added (7.1). New team CLI and test-suite requirements (3.4): one-command start; a looping menu with suite, Task A, B, and C test runs and an exit option; descriptive PASS/FAIL output; tests also runnable through Maven; no user-supplied datasets. Input defined as a documented Java method plus CSV fixtures (3.2). Submission contents listed literally, plus the untracked `submission/raw/` and ZIP layout (9). Deferred scope updated (10). Revision history and table of contents added. Accepted as the team baseline. |
+| 0.3 | October 19, 2026 | Task A coordinate limit of ±1,000,000,000 added (4.1), with the reason: the assignment gives no range, and some limit is unavoidable because the squared distance must fit in a fixed-size Java `long`. The limit is added to Task A's invalid-input list. |
 
 
 ## Table of Contents
@@ -189,15 +190,17 @@ The input is a set of `n >= 2` locations:
 | Field | Requirement |
 | - | - |
 | `id` | Location identifier; unique within one input |
-| `x` | Integer |
-| `y` | Integer |
+| `x` | Integer from −1,000,000,000 to 1,000,000,000 |
+| `y` | Integer from −1,000,000,000 to 1,000,000,000 |
 
 
 No two locations shall have identical `(x, y)` coordinates.
 
+**Coordinate limit.** The assignment allows any integer coordinate but gives no range. A limit is still necessary, because every number is stored in a fixed amount of memory. The squared distance is stored in a Java `long`, whose largest value is about 9.2 × 10¹⁸. With coordinates within ±10⁹, the largest possible `d²` is (2 × 10⁹)² + (2 × 10⁹)² = 8 × 10¹⁸, which fits. Without a limit, `d²` could exceed the `long` range and silently give a wrong answer.
+
 The result shall show the original IDs of a closest pair and their squared Euclidean distance `d² = (xi − xj)² + (yi − yj)²`. The Euclidean distance may also be shown. When several pairs share the minimum distance, any one of them is acceptable.
 
-Invalid input includes fewer than two locations, duplicate IDs, duplicate coordinate pairs, and non-integer coordinates.
+Invalid input includes fewer than two locations, duplicate IDs, duplicate coordinate pairs, non-integer coordinates, and coordinates outside ±1,000,000,000.
 
 ### 4.2 Algorithm Requirements
 
