@@ -16,7 +16,7 @@
 
 | Version | Date | Changes |
 | - | - | - |
-| 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. Later the same day: Tasks A–C pseudocode rewritten in plain steps with clearer names, and a worked example added for each task using an assignment test case. Plain-language step sequence added to Task A (4.1). |
+| 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. Later the same day: Tasks A–C pseudocode rewritten in plain steps with clearer names, and a worked example added for each task using an assignment test case. Plain-language step sequence and two diagrams added to Task A (4.1). |
 
 
 ## Table of Contents
@@ -148,6 +148,39 @@ In short: **sort once, split down, solve the tiny groups, then choose, strip, an
 5. **Top:** the final combine gives the answer.
 
 Sorting happens only once; every split keeps the order of the sorted lists. Points outside a strip are not removed from the problem: pairs among them were already checked inside their own halves at lower levels.
+
+The flow for 8 points (groups of 4 still split, because the base case is 3 or fewer):
+
+```
+ 1. Once         [ 8 points, sorted by x and by y ]
+                                |
+ 2. Going down          [ 4 ]   |   [ 4 ]
+                      [2] | [2] | [2] | [2]
+                                |
+ 3. Bottom       compare every pair in each group of 2
+                                |
+ 4. Going up     [2] + [2]  →  choose d, x strip, y strip  →  best of 4   (twice)
+                 [4] + [4]  →  choose d, x strip, y strip  →  best of 8
+                                |
+ 5. Top          best of 8 = the answer
+```
+
+What one strip point `p` checks during a combine:
+
+```
+          ←─── d ───→ ←─── d ───→
+         :           |           :
+         +-----------|-----------+  ← d above p: stop here
+         |           |           |
+         |           |    ·      |     p compares only with points
+         |      ·    |           |     inside this box (its y strip)
+         +----p------|-----------+  ← p's height
+         :           |           :
+         :     ·     |           :     points lower in the strip were
+         :           |           :     already checked from their own turn
+         ←────── x strip ────────→
+                   line
+```
 
 All distance comparisons use squared distances, so no square roots are needed.
 
