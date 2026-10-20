@@ -16,7 +16,7 @@
 
 | Version | Date | Changes |
 | - | - | - |
-| 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. Later the same day: Tasks A–C pseudocode rewritten in plain steps with clearer names, and a worked example added for each task using an assignment test case. Plain-language step sequence added to Task A (4.1), with a link to a separate illustrated Task A walkthrough. |
+| 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. Later the same day: Tasks A–C pseudocode rewritten in plain steps with clearer names, and a worked example added for each task using an assignment test case. Plain-language step sequence added to Task A (4.1), with a link to a separate illustrated Task A walkthrough. October 20: plain-language step sequence and two-pointer merge summary added to Task B (5.1). |
 
 
 ## Table of Contents
@@ -234,7 +234,37 @@ The two initial sorts take `O(n log n)`. Each recursion level does `O(n)` work (
 
 ### 5.1 Approach
 
-Replace each ID with its position in the planned order, so the problem becomes counting out-of-order pairs in a list of numbers. Merge sort that list; while merging, count how many pairs it had to put back in order.
+In short: **merge sort the planned-order ranks; each merge is "merge two sorted lists into one" plus one extra line: when the next number taken comes from the right list, add how many numbers are still waiting in the left list.**
+
+First, replace each ID with its position in the planned order. A pair delivered in the opposite order then becomes a bigger number before a smaller one. Every pair is either inside the left half, inside the right half, or crossing the divider between them; the halves are handled by recursion, and the crossing pairs are counted by the merge.
+
+`count(piece)` returns two things: how many flipped pairs the piece contains, and the same numbers in sorted order.
+
+1. **Base case:** if the piece has 1 number, it has no pairs. Return 0 and the piece as is.
+
+2. **Split** the piece into a left half and a right half.
+
+3. **Recurse:** call `count` on the left half, then on the right half. Each call returns its half's flipped-pair count and that half now sorted.
+
+4. **Merge with two pointers** into a new, empty **merged list**:
+
+   1. Put the left pointer at the start of the sorted left half, and the right pointer at the start of the sorted right half.
+
+   2. Move the left pointer forward, appending each left number it passes to the end of the merged list, until it reaches a number bigger than the right pointer's number.
+
+   3. Append the right pointer's number to the merged list. Add the count of left numbers still waiting (the one at the left pointer and everything after it) to this merge's count. Each forms a flipped pair with that right number.
+
+   4. Move the right pointer forward, and continue the left pointer from where it stopped. Neither pointer ever moves backward.
+
+   5. When either half runs out, append the other half's leftovers to the merged list. They add nothing to the count.
+
+5. **Return** left count + right count + this merge's count, along with the merged list.
+
+6. **Move up a level:** the caller receives this sorted merged list as one of its two sorted halves and does its own merge (step 4) with it. This repeats one level up each time, until the merge of the whole list returns the final count.
+
+Why sorting the halves is safe: the pairs inside a half were already counted before it was sorted, and a crossing pair only depends on whether the left number is bigger than the right number, not on where either sits inside its half.
+
+For an illustrated, step-by-step walkthrough, see the slides in [figures/task-b/Task B Counting Flipped Pairs.pptx](figures/task-b/Task%20B%20Counting%20Flipped%20Pairs.pptx).
 
 ```
 countInversions(planned, actual):
