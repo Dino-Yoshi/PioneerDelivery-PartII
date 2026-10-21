@@ -50,8 +50,8 @@ class AppTest {
         assertEquals(0, run("2\n3\n4\n0\n"));
         String out = output();
         assertTrue(out.contains("Task A: 13 passed, 0 failed"));
-        assertTrue(out.contains("Task B: 0 passed, 0 failed"));
-        assertTrue(out.contains("Task C: 0 passed, 0 failed"));
+        assertTrue(out.contains("Task B: 11 passed, 0 failed"));
+        assertTrue(out.contains("Task C: 13 passed, 0 failed"));
         assertEquals(4, count(out, "Pioneer Delivery Part II — Test Suite"));
     }
 
@@ -62,6 +62,6 @@ class AppTest {
         assertTrue(out.contains("== Task A: Closest Delivery Locations =="));
         assertTrue(out.contains("== Task B: Counting Dispatch-Order Inversions =="));
         assertTrue(out.contains("== Task C: Selecting a Delivery-Time Threshold =="));
-        assertTrue(out.contains("Total: 13 passed, 0 failed"));
+        assertTrue(out.contains("Total: 37 passed, 0 failed"));
     }
 }

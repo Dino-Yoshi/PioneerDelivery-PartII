@@ -5,8 +5,8 @@ CS 413 Part II of the Pioneer Delivery Algorithm Portfolio. It will provide thre
 | Task | Question | Required algorithm | Status |
 | --- | --- | --- | --- |
 | A | Which two delivery locations are closest? | Divide-and-conquer closest pair, `O(n log n)` | Implemented, suite passing |
-| B | How many dispatch pairs are out of planned order? | Merge-sort inversion count, `O(n log n)` | Not implemented |
-| C | What is the kth-smallest delivery time? | Median-of-medians selection, `O(n)` | Not implemented |
+| B | How many dispatch pairs are out of planned order? | Merge-sort inversion count, `O(n log n)` | Implemented |
+| C | What is the kth-smallest delivery time? | Median-of-medians selection, `O(n)` | Implemented |
 | D | Validation and algorithm analysis | 1–2 page PDF report | Not written |
 
 Requirements are in [docs/SRS-Pioneer-Delivery-PartII-v0.3.md](docs/SRS-Pioneer-Delivery-PartII-v0.3.md), the accepted requirements baseline.
@@ -33,7 +33,7 @@ Choose `1`–`4` to run tests and see the results, `0` or Ctrl+D to exit. Any ot
 
 ## Current state
 
-The menu, fixture reader and suite runner are in place with no test cases yet, so every option reports `0 passed, 0 failed`. No algorithm is implemented.
+Tasks A, B and C are implemented, and the menu runs their test suite. Task D (benchmark and report) is not done.
 
 ## Development environment
 
