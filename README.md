@@ -31,6 +31,15 @@ Pioneer Delivery Part II — Test Suite
 
 Choose `1`–`4` to run tests and see the results, `0` or Ctrl+D to exit. Any other input prints `Unknown choice` and shows the menu again. The menu does not run tasks on user-supplied data.
 
+## Benchmark
+
+```bash
+./mvnw -q -DskipTests package
+java -cp target/classes edu.pioneer.Benchmark
+```
+
+Prints one table per task (size, median milliseconds, ratio to the previous size). It is not part of the tests.
+
 ## Current state
 
 Tasks A, B and C are implemented, and the menu runs their test suite. Task D (benchmark and report) is not done.
