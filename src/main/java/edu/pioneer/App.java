@@ -1,58 +1,64 @@
 package edu.pioneer;
 
+import edu.pioneer.suite.ResultPrinter;
+import edu.pioneer.suite.Task;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /*
- * Command-line entry point for Part II.
- * The task command names are a design proposal, not an accepted interface.
- * Tasks A-C are not implemented yet, so every task command reports that and fails.
+ * Looping menu that runs the test suite (SDS 8.1).
  */
 public final class App {
-
-    static final int EXIT_OK = 0;
-    static final int EXIT_FAILURE = 1;
-    static final int EXIT_USAGE = 2;
 
     private App() {
     }
 
     public static void main(String[] args) {
-        System.exit(run(args, System.out, System.err));
+        System.exit(run(System.in, System.out));
     }
 
-    /*
-     * Runs one command and returns the process exit code.
-     * Output streams are parameters so tests can capture them.
-     */
-    static int run(String[] args, PrintStream out, PrintStream err) {
-        if (args.length == 0 || args[0].equals("help") || args[0].equals("--help")) {
-            printUsage(out);
-            return EXIT_OK;
-        }
-
-        String command = args[0];
-        switch (command) {
-            case "task-a", "task-b", "task-c" -> {
-                err.println("Error: " + command + " is not implemented yet.");
-                return EXIT_FAILURE;
+    /* Runs the menu until exit or end of input, and returns the process exit code. */
+    static int run(InputStream in, PrintStream out) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+        try {
+            while (true) {
+                printMenu(out);
+                String line = reader.readLine();
+                if (line == null) {
+                    out.println();
+                    return 0;
+                }
+                String choice = line.trim();
+                switch (choice) {
+                    case "0" -> {
+                        return 0;
+                    }
+                    case "1" -> ResultPrinter.printTasks(out, List.of(Task.values()));
+                    case "2" -> ResultPrinter.printTasks(out, List.of(Task.A));
+                    case "3" -> ResultPrinter.printTasks(out, List.of(Task.B));
+                    case "4" -> ResultPrinter.printTasks(out, List.of(Task.C));
+                    default -> out.println("Unknown choice: " + choice);
+                }
             }
-            default -> {
-                err.println("Error: unknown command '" + command + "'.");
-                printUsage(err);
-                return EXIT_USAGE;
-            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 
-    private static void printUsage(PrintStream stream) {
-        stream.println("Pioneer Delivery Part II: Divide and Conquer");
-        stream.println();
-        stream.println("Usage: java -jar pioneer-delivery-part2.jar <command> [arguments]");
-        stream.println();
-        stream.println("Commands (not implemented yet):");
-        stream.println("  task-a <locations.csv>      Closest delivery locations");
-        stream.println("  task-b <dispatch.csv>       Dispatch-order inversion count");
-        stream.println("  task-c <times.csv> <k>      kth-smallest delivery time");
-        stream.println("  help                        Show this message");
+    private static void printMenu(PrintStream out) {
+        out.println("Pioneer Delivery Part II — Test Suite");
+        out.println("  1  Run all tests");
+        out.println("  2  Task A: " + Task.A.title());
+        out.println("  3  Task B: " + Task.B.title());
+        out.println("  4  Task C: " + Task.C.title());
+        out.println("  0  Exit");
+        out.print("Choice: ");
+        out.flush();
     }
 }

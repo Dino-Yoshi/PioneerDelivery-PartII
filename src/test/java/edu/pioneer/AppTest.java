@@ -3,46 +3,65 @@ package edu.pioneer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
-/*
- * Checks the placeholder CLI only. No algorithm behavior is tested here.
- */
 class AppTest {
 
-    private final ByteArrayOutputStream outBuffer = new ByteArrayOutputStream();
-    private final ByteArrayOutputStream errBuffer = new ByteArrayOutputStream();
-    private final PrintStream out = new PrintStream(outBuffer, true, StandardCharsets.UTF_8);
-    private final PrintStream err = new PrintStream(errBuffer, true, StandardCharsets.UTF_8);
+    private final ByteArrayOutputStream captured = new ByteArrayOutputStream();
 
-    @Test
-    void noArgumentsPrintsUsage() {
-        int exitCode = App.run(new String[0], out, err);
-
-        assertEquals(App.EXIT_OK, exitCode);
-        assertTrue(outBuffer.toString(StandardCharsets.UTF_8).contains("Usage:"));
+    private int run(String input) {
+        return App.run(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8)),
+                new PrintStream(captured, true, StandardCharsets.UTF_8));
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"task-a", "task-b", "task-c"})
-    void taskCommandsReportNotImplemented(String command) {
-        int exitCode = App.run(new String[] {command}, out, err);
+    private String output() {
+        return captured.toString(StandardCharsets.UTF_8);
+    }
 
-        assertEquals(App.EXIT_FAILURE, exitCode);
-        assertTrue(errBuffer.toString(StandardCharsets.UTF_8).contains("not implemented"));
-        assertEquals("", outBuffer.toString(StandardCharsets.UTF_8));
+    private static int count(String text, String part) {
+        return text.split(java.util.regex.Pattern.quote(part), -1).length - 1;
     }
 
     @Test
-    void unknownCommandIsUsageError() {
-        int exitCode = App.run(new String[] {"task-z"}, out, err);
+    void zeroExitsWithStatusZero() {
+        assertEquals(0, run("0\n"));
+        assertEquals(1, count(output(), "Pioneer Delivery Part II — Test Suite"));
+    }
 
-        assertEquals(App.EXIT_USAGE, exitCode);
-        assertTrue(errBuffer.toString(StandardCharsets.UTF_8).contains("unknown command"));
+    @Test
+    void endOfInputExitsWithStatusZero() {
+        assertEquals(0, run(""));
+    }
+
+    @Test
+    void unknownChoiceIsReportedAndMenuReturns() {
+        assertEquals(0, run("9\nhello\n0\n"));
+        assertTrue(output().contains("Unknown choice: 9"));
+        assertTrue(output().contains("Unknown choice: hello"));
+        assertEquals(3, count(output(), "Pioneer Delivery Part II — Test Suite"));
+    }
+
+    @Test
+    void taskOptionsPrintTheirSummaryAndShowTheMenuAgain() {
+        assertEquals(0, run("2\n3\n4\n0\n"));
+        String out = output();
+        assertTrue(out.contains("Task A: 0 passed, 0 failed"));
+        assertTrue(out.contains("Task B: 0 passed, 0 failed"));
+        assertTrue(out.contains("Task C: 0 passed, 0 failed"));
+        assertEquals(4, count(out, "Pioneer Delivery Part II — Test Suite"));
+    }
+
+    @Test
+    void fullSuitePrintsEachSectionAndATotal() {
+        assertEquals(0, run("1\n0\n"));
+        String out = output();
+        assertTrue(out.contains("== Task A: Closest Delivery Locations =="));
+        assertTrue(out.contains("== Task B: Counting Dispatch-Order Inversions =="));
+        assertTrue(out.contains("== Task C: Selecting a Delivery-Time Threshold =="));
+        assertTrue(out.contains("Total: 0 passed, 0 failed"));
     }
 }

@@ -11,11 +11,29 @@ CS 413 Part II of the Pioneer Delivery Algorithm Portfolio. It will provide thre
 
 Requirements are in [docs/SRS-Pioneer-Delivery-PartII-v0.3.md](docs/SRS-Pioneer-Delivery-PartII-v0.3.md), the accepted requirements baseline.
 
+## Run
+
+```bash
+./run.sh        # Linux/macOS
+run.cmd         # Windows
+```
+
+The script builds the jar (tests skipped) and starts a looping menu. The first run needs network access, because the Maven Wrapper downloads Maven and dependencies.
+
+```text
+Pioneer Delivery Part II — Test Suite
+  1  Run all tests
+  2  Task A: Closest Delivery Locations
+  3  Task B: Counting Dispatch-Order Inversions
+  4  Task C: Selecting a Delivery-Time Threshold
+  0  Exit
+```
+
+Choose `1`–`4` to run tests and see the results, `0` or Ctrl+D to exit. Any other input prints `Unknown choice` and shows the menu again. The menu does not run tasks on user-supplied data.
+
 ## Current state
 
-The repository contains only build and CLI scaffolding. No algorithm is implemented, and no task produces a result. Each task command prints `not implemented yet` and exits with status 1.
-
-The placeholder `task-a`, `task-b`, and `task-c` commands are temporary. Per the SRS (section 3.4), the final CLI will be a looping menu that runs the full test suite or one task's tests, with an exit option. It will not run tasks on user-supplied data.
+The menu, fixture reader and suite runner are in place with no test cases yet, so every option reports `0 passed, 0 failed`. No algorithm is implemented.
 
 ## Development environment
 
@@ -42,14 +60,7 @@ java -version
 
 On Windows, use `mvnw.cmd` instead of `./mvnw`.
 
-The current tests (`src/test/java/edu/pioneer/AppTest.java`) check only the placeholder CLI: usage output, the not-implemented message for each task command, and the unknown-command error.
-
-## Run
-
-```bash
-java -jar target/pioneer-delivery-part2.jar          # usage (exit 0)
-java -jar target/pioneer-delivery-part2.jar task-a   # "not implemented yet" (exit 1)
-```
+`./mvnw test` runs the same cases as the menu (`SuiteTest`, one test per case) plus unit tests for the fixture reader, the case checker and the menu.
 
 ## Project structure
 
@@ -58,8 +69,10 @@ java -jar target/pioneer-delivery-part2.jar task-a   # "not implemented yet" (ex
 ├── pom.xml                 Maven build (JDK 25 release, JUnit 5, executable jar)
 ├── mvnw, mvnw.cmd, .mvn/   Maven Wrapper
 ├── docs/                   SRS (and later the SDS)
-├── src/main/java/edu/pioneer/App.java      CLI entry point (placeholder)
-├── src/test/java/edu/pioneer/AppTest.java  CLI scaffolding tests
+├── run.sh, run.cmd        Build and start the menu
+├── src/main/java/edu/pioneer/App.java      Looping menu (entry point)
+├── src/main/java/edu/pioneer/suite/        Shared test suite (runner, fixture reader, printer)
+├── src/test/java/edu/pioneer/              Menu, fixture reader, runner tests and SuiteTest
 ├── tests/inputs/           Required and additional test inputs (empty; format pending)
 ├── tests/expected/         Expected outputs for those inputs (empty; format pending)
 └── reports/                Task D report PDF (not written)
@@ -71,5 +84,4 @@ java -jar target/pioneer-delivery-part2.jar task-a   # "not implemented yet" (ex
 - Required and additional test fixtures and algorithm tests.
 - Reference-method (brute force, nested loops, sorting) checks.
 - Task D timing measurements and PDF report.
-- The looping test-suite menu (SRS section 3.4).
 - Final input/output format documentation.
