@@ -16,7 +16,7 @@
 
 | Version | Date | Changes |
 | - | - | - |
-| 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. Later the same day: Tasks A–C pseudocode rewritten in plain steps with clearer names, and a worked example added for each task using an assignment test case. Plain-language step sequence added to Task A (4.1), with a link to a separate illustrated Task A walkthrough. October 20: plain-language step sequence and two-pointer merge summary added to Task B (5.1), and a step sequence with rank bands added to Task C (6.1), with a note on how k shifts. Accepted as the team baseline for implementation. |
+| 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. Later the same day: Tasks A–C pseudocode rewritten in plain steps with clearer names, and a worked example added for each task using an assignment test case. Plain-language step sequence added to Task A (4.1), with a link to a separate illustrated Task A walkthrough. October 20: plain-language step sequence and two-pointer merge summary added to Task B (5.1), and a step sequence with rank bands added to Task C (6.1), with a note on how k shifts. Accepted as the team baseline for implementation. October 21: updated to match the implementation as built: the `suite` module list (2), where the reference checks live (7.4), Task C counting before it copies the kept group (6.1, 6.4), and the Task D report files (1). |
 
 
 ## Table of Contents
@@ -61,7 +61,7 @@ The design aims for the simplest structure a human developer can read without ex
 | Fixtures | One input file and one expected file per case, in `tests/` |
 | CLI | Looping numbered menu, started by `run.sh` / `run.cmd` |
 | Timing | Separate `Benchmark` main class |
-| Task D report | `reports/TaskD.odt`, exported to `reports/TaskD.pdf` |
+| Task D report | Written in `docs/TaskD.md`, exported through LibreOffice to `reports/TaskD.odt` and `reports/TaskD.pdf` |
 
 
 ## 2. Module Structure
@@ -83,13 +83,19 @@ edu.pioneer
     ├── TestCase                record (String id, String description)
     ├── CaseCatalog             the list of cases for each task
     ├── FixtureReader           reads input and expected CSV files
+    ├── Outcome                 expected or actual result: a pair, a number, or an error
     ├── CheckResult             record (id, description, expected, actual, passed)
     ├── SuiteRunner             runs cases and random reference checks
-    ├── ReferenceChecks         brute force, nested loops, sorting (testing only)
+    ├── ReferenceChecks         A-ref: all-pairs brute force (testing only)
+    ├── InversionRefCheck       B-ref: two nested loops (testing only)
+    ├── SelectionRefCheck       C-ref: full sort (testing only)
     ├── ResultPrinter           formats results and summaries
     └── FixtureGenerator        one-time generator for the two big fixtures
 
-src/test/java/edu/pioneer/suite/SuiteTest     JUnit entry: one dynamic test per case
+src/test/java/edu/pioneer
+├── suite/SuiteTest             JUnit entry: one dynamic test per case
+├── suite/SuiteRunnerTest, suite/FixtureReaderTest, AppTest
+└── closestpair/, inversions/, selection/   unit tests for each task class
 ```
 
 The reference checks live in `src/main` because the CLI runs them, but only the suite calls them. No task class calls another task class.
@@ -346,7 +352,7 @@ In short: **binary search on ranks. Each round picks a pivot guaranteed to be ne
 
 2. The middle of those medians is the **pivot**. With many groups, finding it runs this same procedure on the list of medians.
 
-3. Compare every value with the pivot, in one pass, and put it in **smaller**, **same**, or **larger**. No sorting: each group keeps the original order.
+3. Compare every value with the pivot, in one pass, and count how many are **smaller** and how many are the **same**. The rest are **larger**. Nothing is sorted or copied yet.
 
 4. Use the group sizes to find which rank band k lands in (s = size of smaller, e = size of same):
 
@@ -356,7 +362,7 @@ In short: **binary search on ranks. Each round picks a pivot guaranteed to be ne
 
    - k > s + e → keep **larger**; new k = k − s − e, because everything below it was thrown away.
 
-5. Repeat with the kept group until it has 5 or fewer values.
+5. In a second pass, copy only the kept group, keeping the original order. Repeat with it until it has 5 or fewer values.
 
 6. Sort that small group. The value at position k (the current k) is the answer.
 
@@ -380,17 +386,17 @@ select(values, k):
     // Step 1: choose a pivot that is guaranteed to be near the middle
     pivot = medianOfMedians(values)
 
-    // Step 2: split the values into three groups around the pivot
-    smaller = values less than pivot
-    same    = values equal to pivot
-    larger  = values greater than pivot
+    // Step 2: count the three groups around the pivot (one pass)
+    s = number of values less than pivot
+    e = number of values equal to pivot
 
-    // Step 3: keep only the group that holds the kth smallest
-    if k <= size of smaller:
-        return select(smaller, k)
-    if k <= size of smaller + size of same:
+    // Step 3: keep only the group that holds the kth smallest,
+    // copying just that group (second pass)
+    if k <= s:
+        return select(values less than pivot, k)
+    if k <= s + e:
         return pivot
-    return select(larger, k − size of smaller − size of same)
+    return select(values greater than pivot, k − s − e)
 
 medianOfMedians(values):
     medians = empty list
@@ -429,7 +435,7 @@ Result: **16**.
 
 ### 6.4 Complexity
 
-`T(n) <= T(n/5) + T(7n/10) + O(n)`. Since `1/5 + 7/10 < 1`, the work shrinks geometrically, giving `O(n)` time. Extra memory is `O(n)`: the three partition arrays and the medians array are new arrays, and their sizes shrink geometrically down the recursion.
+`T(n) <= T(n/5) + T(7n/10) + O(n)`. Since `1/5 + 7/10 < 1`, the work shrinks geometrically, giving `O(n)` time. Extra memory is `O(n)`: each round creates only the kept group and the medians array, and their sizes shrink geometrically down the recursion. The two passes over the values in each round are still `O(n)` per round.
 
 ## 7. Test Suite Design
 
@@ -493,7 +499,7 @@ The remaining cases are invalid input from SRS 4.1, 5.1, and 6.1.
 
 ### 7.4 Random reference checks
 
-`A-ref`, `B-ref`, and `C-ref` each generate 500 small random inputs from the fixed seed `413` and compare the algorithm with the simple method in `ReferenceChecks`:
+`A-ref`, `B-ref`, and `C-ref` each generate 500 small random inputs from the fixed seed `413` and compare the algorithm with a simple method. Each check is its own class: `ReferenceChecks` (A-ref), `InversionRefCheck` (B-ref), and `SelectionRefCheck` (C-ref).
 
 | Check | Random input | Compared with |
 | - | - | - |
