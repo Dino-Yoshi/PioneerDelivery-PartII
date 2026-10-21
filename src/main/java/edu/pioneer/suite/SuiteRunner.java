@@ -1,5 +1,6 @@
 package edu.pioneer.suite;
 
+import edu.pioneer.inversions.InversionCounter;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,11 @@ public final class SuiteRunner {
 
     /* Reads the input file and calls the task. Each task ticket adds its branch here. */
     private static Outcome execute(Task task, Path input) {
+        if (task == Task.B) {
+            FixtureReader.DispatchInput dispatch = FixtureReader.readDispatch(input);
+            return new Outcome.NumberOutcome("inversions",
+                    InversionCounter.countInversions(dispatch.planned(), dispatch.actual()));
+        }
         throw new IllegalStateException("Task " + task + " is not wired into the suite yet");
     }
 

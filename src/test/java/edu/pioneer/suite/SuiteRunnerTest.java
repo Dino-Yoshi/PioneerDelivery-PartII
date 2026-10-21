@@ -52,9 +52,9 @@ class SuiteRunnerTest {
     }
 
     @Test
-    void emptyCaseListsRunWithNoResults() {
+    void everyCaseInTheCatalogPasses() {
         for (Task task : Task.values()) {
-            assertTrue(SuiteRunner.run(task).isEmpty());
+            assertTrue(SuiteRunner.run(task).stream().allMatch(CheckResult::passed));
         }
     }
 }
