@@ -25,7 +25,19 @@ public final class CaseCatalog {
                     new TestCase("B8-length-mismatch", "Sequences of different lengths are rejected"),
                     new TestCase("B9-dupe-id", "A repeated ID is rejected"),
                     new TestCase("B10-unknown-id", "An ID missing from planned is rejected"));
-            case C -> List.of();
+            case C -> List.of(
+                    new TestCase("C1", "Fifth smallest of nine times, answer in the larger group"),
+                    new TestCase("C2", "Second smallest with a repeated minimum"),
+                    new TestCase("C3", "Ninth smallest is the maximum"),
+                    new TestCase("C4", "All values equal"),
+                    new TestCase("C5", "Smallest of two values"),
+                    new TestCase("C6-sorted", "Already sorted input"),
+                    new TestCase("C7-reverse", "Reverse-sorted input"),
+                    new TestCase("C8-many-dupes", "100,000 values from 0-9 with heavy duplication"),
+                    new TestCase("C9-empty", "An empty array is rejected"),
+                    new TestCase("C10-k-zero", "k = 0 is rejected"),
+                    new TestCase("C11-k-too-big", "k above n is rejected"),
+                    new TestCase("C12-negative", "A negative time is rejected"));
         };
     }
 }

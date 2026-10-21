@@ -51,7 +51,7 @@ class AppTest {
         String out = output();
         assertTrue(out.contains("Task A: 0 passed, 0 failed"));
         assertTrue(out.contains("Task B: 11 passed, 0 failed"));
-        assertTrue(out.contains("Task C: 0 passed, 0 failed"));
+        assertTrue(out.contains("Task C: 13 passed, 0 failed"));
         assertEquals(4, count(out, "Pioneer Delivery Part II — Test Suite"));
     }
 

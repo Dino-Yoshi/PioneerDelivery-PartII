@@ -1,6 +1,7 @@
 package edu.pioneer.suite;
 
 import edu.pioneer.inversions.InversionCounter;
+import edu.pioneer.selection.KthSmallestSelector;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,9 @@ public final class SuiteRunner {
         if (task == Task.B) {
             results.add(InversionRefCheck.run());
         }
+        if (task == Task.C) {
+            results.add(SelectionRefCheck.run());
+        }
         return results;
     }
 
@@ -37,6 +41,11 @@ public final class SuiteRunner {
             FixtureReader.DispatchInput dispatch = FixtureReader.readDispatch(input);
             return new Outcome.NumberOutcome("inversions",
                     InversionCounter.countInversions(dispatch.planned(), dispatch.actual()));
+        }
+        if (task == Task.C) {
+            FixtureReader.SelectionInput selection = FixtureReader.readSelection(input);
+            return new Outcome.NumberOutcome("value",
+                    KthSmallestSelector.selectKthSmallest(selection.times(), selection.k()));
         }
         throw new IllegalStateException("Task " + task + " is not wired into the suite yet");
     }
