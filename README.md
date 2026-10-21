@@ -5,7 +5,7 @@ CS 413 Part II of the Pioneer Delivery Algorithm Portfolio. It will provide thre
 | Task | Question | Required algorithm | Status |
 | --- | --- | --- | --- |
 | A | Which two delivery locations are closest? | Divide-and-conquer closest pair, `O(n log n)` | Not implemented |
-| B | How many dispatch pairs are out of planned order? | Merge-sort inversion count, `O(n log n)` | Core implemented (B1–B4) |
+| B | How many dispatch pairs are out of planned order? | Merge-sort inversion count, `O(n log n)` | Implemented |
 | C | What is the kth-smallest delivery time? | Median-of-medians selection, `O(n)` | Not implemented |
 | D | Validation and algorithm analysis | 1–2 page PDF report | Not written |
 

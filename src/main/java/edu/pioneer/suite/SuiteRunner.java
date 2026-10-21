@@ -25,6 +25,9 @@ public final class SuiteRunner {
             Path input = INPUTS.resolve(testCase.id() + ".csv");
             results.add(evaluate(testCase, expected, () -> execute(task, input)));
         }
+        if (task == Task.B) {
+            results.add(InversionRefCheck.run());
+        }
         return results;
     }
 

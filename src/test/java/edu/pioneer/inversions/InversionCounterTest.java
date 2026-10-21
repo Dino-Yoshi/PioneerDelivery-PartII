@@ -1,6 +1,7 @@
 package edu.pioneer.inversions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -19,5 +20,16 @@ class InversionCounterTest {
         List<String> actual = List.of("C", "B", "A");
         assertEquals(3, InversionCounter.countInversions(planned, actual));
         assertEquals(List.of("C", "B", "A"), actual);
+    }
+
+    @Test
+    void rejectsNullsAndNamesTheValue() {
+        assertThrows(IllegalArgumentException.class, () -> InversionCounter.countInversions(null, List.of("A")));
+        assertThrows(IllegalArgumentException.class, () -> InversionCounter.countInversions(List.of("A"), null));
+        assertThrows(IllegalArgumentException.class,
+                () -> InversionCounter.countInversions(java.util.Arrays.asList("A", null), List.of("A", "B")));
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> InversionCounter.countInversions(List.of("A", "A"), List.of("A", "A")));
+        assertEquals("duplicate ID A in planned", e.getMessage());
     }
 }
