@@ -1,5 +1,7 @@
 package edu.pioneer.suite;
 
+import edu.pioneer.closestpair.ClosestPair;
+import edu.pioneer.closestpair.ClosestPairFinder;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,12 +26,24 @@ public final class SuiteRunner {
             Path input = INPUTS.resolve(testCase.id() + ".csv");
             results.add(evaluate(testCase, expected, () -> execute(task, input)));
         }
+        if (task == Task.A) {
+            results.add(ReferenceChecks.closestPair());
+        }
         return results;
     }
 
     /* Reads the input file and calls the task. Each task ticket adds its branch here. */
     private static Outcome execute(Task task, Path input) {
+        if (task == Task.A) {
+            return runTaskA(input);
+        }
         throw new IllegalStateException("Task " + task + " is not wired into the suite yet");
+    }
+
+    private static Outcome runTaskA(Path input) {
+        ClosestPair pair = ClosestPairFinder.findClosestPair(FixtureReader.readLocations(input));
+        return new Outcome.PairOutcome(pair.squaredDistance(),
+                List.of(FixtureReader.sortedPair(pair.firstId(), pair.secondId())));
     }
 
     /*

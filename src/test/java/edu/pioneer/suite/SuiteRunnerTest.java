@@ -52,8 +52,8 @@ class SuiteRunnerTest {
     }
 
     @Test
-    void emptyCaseListsRunWithNoResults() {
-        for (Task task : Task.values()) {
+    void tasksWithoutCasesRunWithNoResults() {
+        for (Task task : List.of(Task.B, Task.C)) {
             assertTrue(SuiteRunner.run(task).isEmpty());
         }
     }
