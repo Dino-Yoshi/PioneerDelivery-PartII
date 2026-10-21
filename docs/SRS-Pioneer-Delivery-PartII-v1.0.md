@@ -342,11 +342,11 @@ Task D has no design of its own; it is a report. Its Design and Complexity secti
 
 | Task | Step-by-step breakdown (SDS) | Complexity (SDS) | Visual walkthrough |
 | - | - | - | - |
-| A | [4.1 Approach](SDS-Pioneer-Delivery-PartII-v1.0.md#41-approach), [4.2 Worked Example](SDS-Pioneer-Delivery-PartII-v1.0.md#42-worked-example-test-a3) | [4.4](SDS-Pioneer-Delivery-PartII-v1.0.md#44-complexity) | [TaskA-Closest-Pair-Explained.md](TaskA-Closest-Pair-Explained.md), [figures/task-a/TaskA-Closest-Pair-Walkthrough.pdf](figures/task-a/TaskA-Closest-Pair-Walkthrough.pdf), [slides](figures/task-a/Task%20A%20Closest%20Pair%20Walkthrough.pptx) |
-| B | [5.1 Approach](SDS-Pioneer-Delivery-PartII-v1.0.md#51-approach), [5.2 Worked Example](SDS-Pioneer-Delivery-PartII-v1.0.md#52-worked-example-test-b1) | [5.4](SDS-Pioneer-Delivery-PartII-v1.0.md#54-complexity) | [figures/task-b slides](figures/task-b/Task%20B%20Counting%20Flipped%20Pairs.pptx) |
-| C | [6.1 Approach](SDS-Pioneer-Delivery-PartII-v1.0.md#61-approach), [6.2 Worked Example](SDS-Pioneer-Delivery-PartII-v1.0.md#62-worked-example-test-c1) | [6.4](SDS-Pioneer-Delivery-PartII-v1.0.md#64-complexity) | [figures/task-c slides](figures/task-c/Task%20C%20Selecting%20the%20kth%20Smallest.pptx) |
+| A | [4.1 Approach](SDS-Pioneer-Delivery-PartII-v1.1.md#41-approach), [4.2 Worked Example](SDS-Pioneer-Delivery-PartII-v1.1.md#42-worked-example-test-a3) | [4.4](SDS-Pioneer-Delivery-PartII-v1.1.md#44-complexity) | [TaskA-Closest-Pair-Explained.md](TaskA-Closest-Pair-Explained.md), [figures/task-a/TaskA-Closest-Pair-Walkthrough.pdf](figures/task-a/TaskA-Closest-Pair-Walkthrough.pdf), [slides](figures/task-a/Task%20A%20Closest%20Pair%20Walkthrough.pptx) |
+| B | [5.1 Approach](SDS-Pioneer-Delivery-PartII-v1.1.md#51-approach), [5.2 Worked Example](SDS-Pioneer-Delivery-PartII-v1.1.md#52-worked-example-test-b1) | [5.4](SDS-Pioneer-Delivery-PartII-v1.1.md#54-complexity) | [figures/task-b slides](figures/task-b/Task%20B%20Counting%20Flipped%20Pairs.pptx) |
+| C | [6.1 Approach](SDS-Pioneer-Delivery-PartII-v1.1.md#61-approach), [6.2 Worked Example](SDS-Pioneer-Delivery-PartII-v1.1.md#62-worked-example-test-c1) | [6.4](SDS-Pioneer-Delivery-PartII-v1.1.md#64-complexity) | [figures/task-c slides](figures/task-c/Task%20C%20Selecting%20the%20kth%20Smallest.pptx) |
 
-The performance numbers shall come from the benchmark ([SDS 9](SDS-Pioneer-Delivery-PartII-v1.0.md#9-benchmark-design)), and the correctness evidence from the test suite ([SDS 7](SDS-Pioneer-Delivery-PartII-v1.0.md#7-test-suite-design)).
+The performance numbers shall come from the benchmark ([SDS 9](SDS-Pioneer-Delivery-PartII-v1.1.md#9-benchmark-design)), and the correctness evidence from the test suite ([SDS 7](SDS-Pioneer-Delivery-PartII-v1.1.md#7-test-suite-design)).
 
 ### 7.1 Writing Style (team requirement)
 

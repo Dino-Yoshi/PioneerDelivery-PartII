@@ -4,7 +4,7 @@
 
 - **Course:** CS 413 — Analysis of Algorithms
 
-- **Version:** 1.0
+- **Version:** 1.1
 
 - **Date:** October 21, 2026
 
@@ -18,6 +18,7 @@
 | - | - | - |
 | 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. Later the same day: Tasks A–C pseudocode rewritten in plain steps with clearer names, and a worked example added for each task using an assignment test case. Plain-language step sequence added to Task A (4.1), with a link to a separate illustrated Task A walkthrough. October 20: plain-language step sequence and two-pointer merge summary added to Task B (5.1), and a step sequence with rank bands added to Task C (6.1), with a note on how k shifts. Accepted as the team baseline for implementation. October 21: updated to match the implementation as built: the `suite` module list (2), where the reference checks live (7.4), Task C counting before it copies the kept group (6.1, 6.4), and the Task D report files (1). |
 | 1.0 | October 21, 2026 | Final version for submission. No design changes since the October 21 update to 0.1; links updated to the final SRS, and the file renamed from `-v0.1.md`. |
+| 1.1 | October 21, 2026 | Submission packaging fix (10): the ZIP is built with Python's `zipfile`, which keeps Unix permissions, because `jar` dropped the executable bit and `./run.sh` failed after `unzip`. The check now extracts with `unzip` and confirms `run.sh` and `mvnw` are executable. File renamed from `-v1.0.md`. |
 
 
 ## Table of Contents
@@ -598,9 +599,9 @@ The Task D report explains the extra sizes: small sizes are noisy, and the range
 
 5. Record the suite output by running `printf '1\n0\n' | java -jar target/pioneer-delivery-part2.jar` and saving it to `submission/raw/tests/results/suite-output.txt`.
 
-6. Create `submission/pioneer-delivery-part2.zip` from `raw/` with `jar --create --no-manifest`.
+6. Create `submission/pioneer-delivery-part2.zip` from `raw/` with Python's `zipfile`, which stores Unix permissions so `run.sh` and `mvnw` stay executable. (`jar` does not store them.)
 
-7. Extract the ZIP into a temporary folder, check its file list matches `raw/`, and run `./mvnw -q test` there.
+7. Extract the ZIP with `unzip` into a temporary folder, check its file list matches `raw/`, check that `run.sh` and `mvnw` are executable, and run `./mvnw -q test` there.
 
 `submission/` is ignored by Git (SRS 9.2).
 
