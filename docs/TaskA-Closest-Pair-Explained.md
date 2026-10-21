@@ -8,7 +8,7 @@
 
 - **Status:** Study aid; companion to SDS section 4
 
-- **Design authority:** [SDS-Pioneer-Delivery-PartII-v0.1.md](SDS-Pioneer-Delivery-PartII-v0.1.md)
+- **Design authority:** [SDS-Pioneer-Delivery-PartII-v1.0.md](SDS-Pioneer-Delivery-PartII-v1.0.md)
 
 - **Figures:** [TaskA-Closest-Pair-Walkthrough.pdf](figures/task-a/TaskA-Closest-Pair-Walkthrough.pdf) (slides exported to PDF); PowerPoint: [Task A Closest Pair Walkthrough.pptx](figures/task-a/Task%20A%20Closest%20Pair%20Walkthrough.pptx); editable original: [slide deck](https://claude.ai/artifact/KgiTAndkpo6KZSZ8bf93ap) (private to the owner until shared)
 

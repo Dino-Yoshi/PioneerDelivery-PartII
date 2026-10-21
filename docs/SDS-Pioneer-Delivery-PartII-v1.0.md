@@ -4,19 +4,20 @@
 
 - **Course:** CS 413 — Analysis of Algorithms
 
-- **Version:** 0.1
+- **Version:** 1.0
 
-- **Date:** October 19, 2026
+- **Date:** October 21, 2026
 
-- **Status:** Accepted team baseline for implementation
+- **Status:** Final, matches the submitted implementation
 
-- **Requirements authority:** [SRS-Pioneer-Delivery-PartII-v0.3.md](SRS-Pioneer-Delivery-PartII-v0.3.md)
+- **Requirements authority:** [SRS-Pioneer-Delivery-PartII-v1.0.md](SRS-Pioneer-Delivery-PartII-v1.0.md)
 
 ## Revision History
 
 | Version | Date | Changes |
 | - | - | - |
 | 0.1 | October 19, 2026 | First draft from the accepted SRS and the design review session. Later the same day: Tasks A–C pseudocode rewritten in plain steps with clearer names, and a worked example added for each task using an assignment test case. Plain-language step sequence added to Task A (4.1), with a link to a separate illustrated Task A walkthrough. October 20: plain-language step sequence and two-pointer merge summary added to Task B (5.1), and a step sequence with rank bands added to Task C (6.1), with a note on how k shifts. Accepted as the team baseline for implementation. October 21: updated to match the implementation as built: the `suite` module list (2), where the reference checks live (7.4), Task C counting before it copies the kept group (6.1, 6.4), and the Task D report files (1). |
+| 1.0 | October 21, 2026 | Final version for submission. No design changes since the October 21 update to 0.1; links updated to the final SRS, and the file renamed from `-v0.1.md`. |
 
 
 ## Table of Contents
